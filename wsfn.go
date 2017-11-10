@@ -27,9 +27,7 @@ import (
 	"strings"
 )
 
-var (
-	Version = `v0.0.1`
-)
+const Version = `v0.0.1`
 
 // IsDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
 func IsDotPath(p string) bool {
