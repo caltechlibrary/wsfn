@@ -122,11 +122,11 @@ func StaticRouter(next http.Handler) http.Handler {
 			ResponseLogger(r, 403, fmt.Errorf("Forbidden, requested a dot path"))
 			return
 		}
-        // Check to see if we have a *.wasm file, then make sure
-        // we have the correct headers.
-        if ext := path.Ext(r.URL.Path); ext == ".wasm" {
-            w.Header().Set("Content-Type", "appliction/wasm")
-        }
+		// Check to see if we have a *.wasm file, then make sure
+		// we have the correct headers.
+		if ext := path.Ext(r.URL.Path); ext == ".wasm" {
+			w.Header().Set("Content-Type", "application/wasm")
+		}
 
 		// If we make it this far, fall back to the default handler
 		next.ServeHTTP(w, r)
