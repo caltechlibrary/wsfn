@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-const Version = `v0.0.1`
+const Version = `v0.0.2`
 
 // IsDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
 func IsDotPath(p string) bool {
@@ -122,6 +122,12 @@ func StaticRouter(next http.Handler) http.Handler {
 			ResponseLogger(r, 403, fmt.Errorf("Forbidden, requested a dot path"))
 			return
 		}
+        // Check to see if we have a *.wasm file, then make sure
+        // we have the correct headers.
+        if ext := path.Ext(r.URL.Path); ext == ".wasm" {
+            w.Header().Set("Content-Type", "appliction/wasm")
+        }
+
 		// If we make it this far, fall back to the default handler
 		next.ServeHTTP(w, r)
 	})
