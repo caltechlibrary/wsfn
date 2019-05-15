@@ -23,11 +23,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"path"
+	"sort"
 	"strings"
 )
 
-const Version = `v0.0.2`
+const Version = `v0.0.3`
 
 // IsDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
 func IsDotPath(p string) bool {
@@ -46,6 +48,13 @@ type CORSPolicy struct {
 	ExposedHeaders   string
 	AllowCredentials string
 }
+
+var (
+	// An internal ordered list of keys in redirectRoutes map
+	redirectPrefixes = []string{}
+	// Our map of redirect prefix to target replacement routes
+	redirectRoutes = map[string]string{}
+)
 
 // Handle accepts an http.Handler and returns a http.Handler. It
 // Wraps the response with the CORS headers based on configuration
@@ -128,6 +137,65 @@ func StaticRouter(next http.Handler) http.Handler {
 			w.Header().Set("Content-Type", "application/wasm")
 		}
 
+		// If we make it this far, fall back to the default handler
+		next.ServeHTTP(w, r)
+	})
+}
+
+// HasRedirectRoutes returns true if redirects have been defined,
+// false if not.
+func HasRedirectRoutes() bool {
+	if len(redirectPrefixes) > 0 || len(redirectRoutes) > 0 {
+		return true
+	}
+	return false
+}
+
+// AddRedirectRoute takes a target and a destination prefix
+// and populates the internal datastructures to handle
+// the redirecting target prefix to the destination prefix.
+func AddRedirectRoute(target, destination string) error {
+	// Make sure prefix has not been defined
+	for _, p := range redirectPrefixes {
+		if strings.HasPrefix(p, target) || strings.HasPrefix(target, p) {
+			return fmt.Errorf("targets %q and %q collide", target, p)
+		}
+	}
+	redirectRoutes[target] = destination
+	redirectPrefixes = append(redirectPrefixes, target)
+	sort.Strings(redirectPrefixes)
+	return nil
+}
+
+// isRedirectTarget
+func isRedirectTarget(srcPath, targetPath string) bool {
+	// Do a course level check first ...
+	ok, _ := path.Match(targetPath, srcPath)
+	return ok
+}
+
+// RedirectRouter handles redirect requests before passing on to the
+// handler.
+func RedirectRouter(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Do we have a redirect prefix in r.URL.Path
+		for _, target := range redirectPrefixes {
+			if strings.HasPrefix(r.URL.Path, target) {
+				// Update our path to use new prefix
+				if destination, ok := redirectRoutes[target]; ok == true {
+					// Clone our existing Request URL ...
+					u, _ := url.Parse(r.URL.String())
+					// Calculate a new path
+					p := strings.TrimPrefix(u.Path, target)
+					// Update our new path.
+					u.Path = path.Join(destination, p)
+					log.Printf("Redirecting %q to %q", r.URL.String(), u.String())
+					// Send our redirect on its way!
+					http.Redirect(w, r, u.String(), http.StatusMovedPermanently)
+					return
+				}
+			}
+		}
 		// If we make it this far, fall back to the default handler
 		next.ServeHTTP(w, r)
 	})
