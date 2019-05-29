@@ -131,6 +131,10 @@ func StaticRouter(next http.Handler) http.Handler {
 			ResponseLogger(r, 403, fmt.Errorf("Forbidden, requested a dot path"))
 			return
 		}
+		// Check if we have a gzipped JSON file
+		if strings.HasSuffix(r.URL.Path, ".json.gz") || strings.HasSuffix(r.URL.Path, ".js.gz") {
+			w.Header().Set("Content-Encoding", "gzip")
+		}
 		// Check to see if we have a *.wasm file, then make sure
 		// we have the correct headers.
 		if ext := path.Ext(r.URL.Path); ext == ".wasm" {
