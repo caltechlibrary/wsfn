@@ -20,57 +20,31 @@
 package wsfn
 
 import (
-	"fmt"
+	"log"
 	"net/http"
-	"path"
-	"strings"
 )
 
-const Version = `v0.0.4`
-
-// IsDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
-func IsDotPath(p string) bool {
-	for _, part := range strings.Split(path.Clean(p), "/") {
-		if strings.HasPrefix(part, "..") == false && strings.HasPrefix(part, ".") == true && len(part) > 1 {
-			return true
-		}
-	}
-	return false
-}
-
-// StaticRouter scans the request object to either add a .html extension
-// or prevent serving a dot file path
-func StaticRouter(next http.Handler) http.Handler {
+// RequestLogger logs the request based on the request object passed into
+// it.
+func RequestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if origin := r.Header.Get("Origin"); origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-			w.Header().Set("Access-Control-Allow-Methods", "GET")
-			w.Header().Set("Access-Control-Allow-Headers",
-				"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		q := r.URL.Query()
+		if len(q) > 0 {
+			log.Printf("Request: %s Path: %s RemoteAddr: %s UserAgent: %s Query: %+v\n", r.Method, r.URL.Path, r.RemoteAddr, r.UserAgent(), q)
+		} else {
+			log.Printf("Request: %s Path: %s RemoteAddr: %s UserAgent: %s\n", r.Method, r.URL.Path, r.RemoteAddr, r.UserAgent())
 		}
-		// Stop here if its Preflighted OPTIONS request
-		if r.Method == "OPTIONS" {
-			return
-		}
-
-		// If given a dot file path, send forbidden
-		if IsDotPath(r.URL.Path) == true {
-			http.Error(w, "Forbidden", 403)
-			ResponseLogger(r, 403, fmt.Errorf("Forbidden, requested a dot path"))
-			return
-		}
-		// Check if we have a gzipped JSON file
-		if strings.HasSuffix(r.URL.Path, ".json.gz") || strings.HasSuffix(r.URL.Path, ".js.gz") {
-			w.Header().Set("Content-Encoding", "gzip")
-		}
-		// Check to see if we have a *.wasm file, then make sure
-		// we have the correct headers.
-		if ext := path.Ext(r.URL.Path); ext == ".wasm" {
-			w.Header().Set("Content-Type", "application/wasm")
-		}
-
-		// If we make it this far, fall back to the default handler
 		next.ServeHTTP(w, r)
 	})
+}
+
+// ResponseLogger logs the response based on a request, status and error
+// message
+func ResponseLogger(r *http.Request, status int, err error) {
+	q := r.URL.Query()
+	if len(q) > 0 {
+		log.Printf("Response: %s Path: %s RemoteAddr: %s UserAgent: %s Query: %+v Status: %d, %s %q\n", r.Method, r.URL.Path, r.RemoteAddr, r.UserAgent(), q, status, http.StatusText(status), err)
+	} else {
+		log.Printf("Response: %s Path: %s RemoteAddr: %s UserAgent: %s Status: %d, %s %q\n", r.Method, r.URL.Path, r.RemoteAddr, r.UserAgent(), status, http.StatusText(status), err)
+	}
 }

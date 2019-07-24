@@ -20,57 +20,48 @@
 package wsfn
 
 import (
-	"fmt"
 	"net/http"
-	"path"
 	"strings"
 )
 
-const Version = `v0.0.4`
-
-// IsDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
-func IsDotPath(p string) bool {
-	for _, part := range strings.Split(path.Clean(p), "/") {
-		if strings.HasPrefix(part, "..") == false && strings.HasPrefix(part, ".") == true && len(part) > 1 {
-			return true
-		}
-	}
-	return false
+// CORSPolicy defines the policy elements for our CORS settings.
+type CORSPolicy struct {
+	// Origin usually would be set the hostname of the service.
+	Origin string `json:"origin,omitempty" toml:"origin,omitempty"`
+	// Options to include in the policy (e.g. GET, POST)
+	Options []string `json:"options,omitempty" toml:"options,omitempty"`
+	// Headers to include in the policy
+	Headers []string `json:"headers,omitempty" toml:"headers,omitempty"`
+	// ExposedHeaders to include in the policy
+	ExposedHeaders []string `json:"exposed_headers,omitempty" toml:"exposed_headers,omitempty"`
+	// AllowCredentials header handling in the policy either true or not set
+	AllowCredentials bool `json:"allow_credentials,omitempty" toml:"allow_credentials,omitempty"`
 }
 
-// StaticRouter scans the request object to either add a .html extension
-// or prevent serving a dot file path
-func StaticRouter(next http.Handler) http.Handler {
+// Handle accepts an http.Handler and returns a http.Handler. It
+// Wraps the response with the CORS headers based on configuration
+// in CORSPolicy struct.
+func (cors *CORSPolicy) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if origin := r.Header.Get("Origin"); origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-			w.Header().Set("Access-Control-Allow-Methods", "GET")
-			w.Header().Set("Access-Control-Allow-Headers",
-				"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		if cors.Origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", cors.Origin)
 		}
-		// Stop here if its Preflighted OPTIONS request
+		if len(cors.Options) > 0 {
+			w.Header().Set("Access-Control-Allow-Methods", strings.Join(cors.Options, ","))
+		}
+		if len(cors.Headers) > 0 {
+			w.Header().Set("Access-Control-Allow-Headers", strings.Join(cors.Headers, ","))
+		}
+		if len(cors.ExposedHeaders) > 0 {
+			w.Header().Set("Access-Control-Expose-Headers", strings.Join(cors.ExposedHeaders, ","))
+		}
+		if cors.AllowCredentials == true {
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
+		// Bailout if we ahve an OPTIONS preflight request
 		if r.Method == "OPTIONS" {
 			return
 		}
-
-		// If given a dot file path, send forbidden
-		if IsDotPath(r.URL.Path) == true {
-			http.Error(w, "Forbidden", 403)
-			ResponseLogger(r, 403, fmt.Errorf("Forbidden, requested a dot path"))
-			return
-		}
-		// Check if we have a gzipped JSON file
-		if strings.HasSuffix(r.URL.Path, ".json.gz") || strings.HasSuffix(r.URL.Path, ".js.gz") {
-			w.Header().Set("Content-Encoding", "gzip")
-		}
-		// Check to see if we have a *.wasm file, then make sure
-		// we have the correct headers.
-		if ext := path.Ext(r.URL.Path); ext == ".wasm" {
-			w.Header().Set("Content-Type", "application/wasm")
-		}
-
-		// If we make it this far, fall back to the default handler
 		next.ServeHTTP(w, r)
 	})
 }

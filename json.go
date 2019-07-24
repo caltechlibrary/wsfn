@@ -20,57 +20,26 @@
 package wsfn
 
 import (
-	"fmt"
+	"encoding/json"
+	"log"
 	"net/http"
-	"path"
-	"strings"
+	// Caltech Library Packages
 )
 
-const Version = `v0.0.4`
-
-// IsDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
-func IsDotPath(p string) bool {
-	for _, part := range strings.Split(path.Clean(p), "/") {
-		if strings.HasPrefix(part, "..") == false && strings.HasPrefix(part, ".") == true && len(part) > 1 {
-			return true
-		}
+// jsonResponse enforces a common JSON response write handling.
+// It takes a response writer and request plus a struct that can
+// be converted to JSON.
+func jsonResponse(w http.ResponseWriter, r *http.Request, data interface{}) {
+	src, err := json.MarshalIndent(data, "", "    ")
+	if err != nil {
+		log.Printf("json marshal error, %s %s", r.URL.Path, err)
+		http.Error(w, "Internal Server error", http.StatusInternalServerError)
+		return
 	}
-	return false
-}
-
-// StaticRouter scans the request object to either add a .html extension
-// or prevent serving a dot file path
-func StaticRouter(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if origin := r.Header.Get("Origin"); origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			//w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-			w.Header().Set("Access-Control-Allow-Methods", "GET")
-			w.Header().Set("Access-Control-Allow-Headers",
-				"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		}
-		// Stop here if its Preflighted OPTIONS request
-		if r.Method == "OPTIONS" {
-			return
-		}
-
-		// If given a dot file path, send forbidden
-		if IsDotPath(r.URL.Path) == true {
-			http.Error(w, "Forbidden", 403)
-			ResponseLogger(r, 403, fmt.Errorf("Forbidden, requested a dot path"))
-			return
-		}
-		// Check if we have a gzipped JSON file
-		if strings.HasSuffix(r.URL.Path, ".json.gz") || strings.HasSuffix(r.URL.Path, ".js.gz") {
-			w.Header().Set("Content-Encoding", "gzip")
-		}
-		// Check to see if we have a *.wasm file, then make sure
-		// we have the correct headers.
-		if ext := path.Ext(r.URL.Path); ext == ".wasm" {
-			w.Header().Set("Content-Type", "application/wasm")
-		}
-
-		// If we make it this far, fall back to the default handler
-		next.ServeHTTP(w, r)
-	})
+	w.Header().Add("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	if _, err := w.Write(src); err != nil {
+		return
+	}
+	log.Printf("FIXME: Log successful requests here ... %s", r.URL.Path)
 }

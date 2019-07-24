@@ -24,7 +24,11 @@ _testmain.go
 *.prof
 
 # project specific excludes
-testdata/*
+testout/*
 *~
 *.swp
 .DS_Store
+bin/*
+dist/*
+test.json
+test.toml

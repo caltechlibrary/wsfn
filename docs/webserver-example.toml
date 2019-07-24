@@ -1,0 +1,65 @@
+#
+# A TOML file example for configuring **ws**.
+# Lines starting with "#" are comments.
+#
+
+# Setting up HTTPS scheme support
+[https]
+cert_pem = "etc/certs/cert_pem"
+key_pem = "etc/certs/key_pem"
+host = "localhost"
+port = "8443"
+
+# Setting up standard http support
+[http]
+host = "localhost"
+port = "8000"
+
+# 
+# Setup your document root for the website.
+# It is relative to the current working directory
+# unless a path is fully specified.
+htdocs = "htdocs"
+
+#
+# Configure HTTP Basic Auth to protect the /api/ 
+# web path
+#
+[basic_auth]
+# protected web server paths 
+paths = [ "/api/" ]
+# Points to an Apache htpasswd formatted file 
+# path is either relative to working directory 
+# must be fully specified.
+passwords = "etc/ws-api-passwords"
+
+#
+# CORS policy configuration example adpated from 
+# Mozilla website.
+# See https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+[cors]
+Access_Control_Origin = "http://foo.example:8000"
+Access_Control_Allow_Credentials = true
+Access_Control_Methods = [ "POST", "GET" ]
+Access_Control_Allow_Headers = [ "X-PINGPONG", "Content-Type" ]
+Access_Control_Max_Age = 86400
+
+#
+# Mapping file extensions to mime types
+#
+[content_types]
+".json" = "application/json"
+".toml" = "application/x+toml"
+
+#
+# Redirects are specified in CSV file format.
+# first column is the target, second the destination
+#
+redirects = "redirects.csv"
+
+#
+# reverse-proxy examples
+#
+[reverse_proxy]
+"/api/" = "http://localhost:9000/"
+
