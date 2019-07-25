@@ -32,3 +32,6 @@ bin/*
 dist/*
 test.json
 test.toml
+access.toml
+workflows.toml
+users.toml
