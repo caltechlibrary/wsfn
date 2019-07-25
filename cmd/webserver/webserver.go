@@ -112,7 +112,7 @@ func main() {
 	// Add Help Docs
 	app.AddHelp("license", []byte(fmt.Sprintf(wsfn.LicenseText, appName, wsfn.Version)))
 	app.AddHelp("description", []byte(fmt.Sprintf(description, appName, appName, appName)))
-	app.AddHelp("examples", []byte(fmt.Sprintf(examples, appName, appName, appName)))
+	app.AddHelp("examples", []byte(fmt.Sprintf(examples, appName, appName, appName, appName)))
 
 	// Standard Options
 	app.BoolVar(&showHelp, "h", false, "display help")

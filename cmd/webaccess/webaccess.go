@@ -210,7 +210,7 @@ func testAccess(fName, username, password string) error {
 	default:
 		return fmt.Errorf("Unknown format of file.")
 	}
-	if a.LoginBasicAUTH(username, password, true) == false {
+	if a.Login(username, password) == false {
 		return fmt.Errorf("Failed to authenticate %s", username)
 	}
 	return nil

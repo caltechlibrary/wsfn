@@ -26,6 +26,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha512"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -49,7 +50,7 @@ import (
 type Access struct {
 	// AuthType (e.g. Basic)
 	AuthType string `json:"auth_type" toml:"auth_type"`
-	// AuthName (e.g. string describing authorization)
+	// AuthName (e.g. string describing authorization, e.g. realm in basic auth)
 	AuthName string `json:"auth_name" toml:"auth_name"`
 	// Encryption is a string describing the encryption used
 	// e.g. argon2id, pbkds2, md5 or sha512
@@ -218,16 +219,16 @@ func (a *Access) Login(username string, password string) bool {
 }
 
 // BasicAUTH is a wrapping handler for apply BasicAUTH rules.
-func (ws *WebService) BasicAUTH(next Handler) Handler {
+func (a *Access) BasicAUTH(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, ws.AccessName))
+		w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, a.AuthName))
 		// Check to see if we've previously authenticated.
 		username, password, ok := r.BasicAuth()
 		if ok == false {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		if ws.Login(username, password) == false {
+		if a.Login(username, password) == false {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
