@@ -25,6 +25,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	// X packages
@@ -58,25 +59,34 @@ The following is an example.
 	examples = `
 Create an empty "access.toml" file.
 
-   %s access.toml init
+   %s init access.toml
 
 Add user id "Jane.Doe" to "access.toml".
 The access program prompts for a password. It will 
 create "access.toml" if it doesn't exist.
 
-   %s access.toml updte Jane.Doe
+   %s update access.toml Jane.Doe
 
 Remove "Jane.Doe" from access.toml.
 
-   %s access.toml remove Jane.Doe
+   %s remove access.toml Jane.Doe
 
 List users defined in access.toml.
 
-   %s access.toml list
+   %s list access.toml 
 
 Test a login for Jane.Doe (will prompt for password)
 
-   %s access.toml test Jane.Doe
+   %s test access.toml Jane.Doe
+
+Routes follow a similar pattern of update, list, remove.
+(note you can update or remove more than one route at a time)
+
+   %s routes update access.toml "/api/" "/private"
+
+   %s routes list access.toml
+
+   %s routes remove access.toml "/private/"
 `
 
 	// Standard options
@@ -94,14 +104,7 @@ func initAccess(fName string) error {
 	a := new(wsfn.Access)
 	a.AuthType = "basic"
 	a.Encryption = "argon2id"
-	switch {
-	case strings.HasSuffix(fName, ".toml"):
-		return a.DumpAccessTOML(fName)
-	case strings.HasSuffix(fName, ".json"):
-		return a.DumpAccessJSON(fName)
-	default:
-		return fmt.Errorf("Unknown format of file.")
-	}
+	return a.DumpAccess(fName)
 }
 
 func updateAccess(fName, username, password string) error {
@@ -111,53 +114,25 @@ func updateAccess(fName, username, password string) error {
 			return err
 		}
 	}
-	switch {
-	case strings.HasSuffix(fName, ".toml"):
-		a, err := wsfn.LoadAccessTOML(fName)
-		if err != nil {
-			return err
-		}
-		if a.UpdateAccess(username, password) == false {
-			return fmt.Errorf("Failed to update %s", username)
-		}
-		return a.DumpAccessTOML(fName)
-	case strings.HasSuffix(fName, ".json"):
-		a, err := wsfn.LoadAccessJSON(fName)
-		if err != nil {
-			return err
-		}
-		if a.UpdateAccess(username, password) == false {
-			return fmt.Errorf("Failed to update %s", username)
-		}
-		return a.DumpAccessJSON(fName)
-	default:
-		return fmt.Errorf("Unknown format of file.")
+	a, err := wsfn.LoadAccess(fName)
+	if err != nil {
+		return err
 	}
+	if a.UpdateAccess(username, password) == false {
+		return fmt.Errorf("Failed to update %s", username)
+	}
+	return a.DumpAccess(fName)
 }
 
 func removeAccess(fName, username string) error {
-	switch {
-	case strings.HasSuffix(fName, ".toml"):
-		a, err := wsfn.LoadAccessTOML(fName)
-		if err != nil {
-			return err
-		}
-		if a.RemoveAccess(username) == false {
-			return fmt.Errorf("Failed to find %s", username)
-		}
-		return a.DumpAccessTOML(fName)
-	case strings.HasSuffix(fName, ".json"):
-		a, err := wsfn.LoadAccessJSON(fName)
-		if err != nil {
-			return err
-		}
-		if a.RemoveAccess(username) == false {
-			return fmt.Errorf("Failed to find %s", username)
-		}
-		return a.DumpAccessJSON(fName)
-	default:
-		return fmt.Errorf("Unknown format of file.")
+	a, err := wsfn.LoadAccess(fName)
+	if err != nil {
+		return err
 	}
+	if a.RemoveAccess(username) == false {
+		return fmt.Errorf("Failed to find %s", username)
+	}
+	return a.DumpAccess(fName)
 }
 
 func listAccess(fName string) error {
@@ -165,19 +140,9 @@ func listAccess(fName string) error {
 		a   *wsfn.Access
 		err error
 	)
-	switch {
-	case strings.HasSuffix(fName, ".toml"):
-		a, err = wsfn.LoadAccessTOML(fName)
-		if err != nil {
-			return err
-		}
-	case strings.HasSuffix(fName, ".json"):
-		a, err = wsfn.LoadAccessJSON(fName)
-		if err != nil {
-			return err
-		}
-	default:
-		return fmt.Errorf("Unknown format of file.")
+	a, err = wsfn.LoadAccess(fName)
+	if err != nil {
+		return err
 	}
 	for key, _ := range a.Map {
 		if key != "" {
@@ -196,19 +161,9 @@ func testAccess(fName, username, password string) error {
 	if _, err = os.Stat(fName); os.IsNotExist(err) {
 		return err
 	}
-	switch {
-	case strings.HasSuffix(fName, ".toml"):
-		a, err = wsfn.LoadAccessTOML(fName)
-		if err != nil {
-			return err
-		}
-	case strings.HasSuffix(fName, ".json"):
-		a, err = wsfn.LoadAccessJSON(fName)
-		if err != nil {
-			return err
-		}
-	default:
-		return fmt.Errorf("Unknown format of file.")
+	a, err = wsfn.LoadAccess(fName)
+	if err != nil {
+		return err
 	}
 	if a.Login(username, password) == false {
 		return fmt.Errorf("Failed to authenticate %s", username)
@@ -216,25 +171,97 @@ func testAccess(fName, username, password string) error {
 	return nil
 }
 
+func listRoutes(a *wsfn.Access) error {
+	for _, route := range a.Routes {
+		fmt.Fprintf(os.Stdout, "%s\n", route)
+	}
+	return nil
+}
+
+func updateRoutes(fName string, a *wsfn.Access, args []string) error {
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "/") == false {
+			arg = "/" + arg
+		}
+		for _, route := range a.Routes {
+			if strings.HasPrefix(arg, route) || strings.HasPrefix(route, arg) {
+				return fmt.Errorf("%q collides with %q", arg, route)
+			}
+		}
+		a.Routes = append(a.Routes, arg)
+		sort.Strings(a.Routes)
+	}
+	return a.DumpAccess(fName)
+}
+
+func removeRoutes(fName string, a *wsfn.Access, args []string) error {
+	for _, arg := range args {
+		routeFound := false
+		if strings.HasPrefix(arg, "/") == false {
+			arg = "/" + arg
+		}
+		for i, route := range a.Routes {
+			if strings.Compare(arg, route) == 0 {
+				a.Routes = append(a.Routes[:i], a.Routes[i+1:]...)
+				routeFound = true
+			}
+		}
+		if routeFound == false {
+			return fmt.Errorf("Could not find route %q", arg)
+		}
+	}
+	sort.Strings(a.Routes)
+	return a.DumpAccess(fName)
+}
+
+func manageRoutes(args []string) error {
+	var (
+		verb  string
+		fName string
+	)
+	switch len(args) {
+	case 0:
+		return fmt.Errorf("update, list, or remove?")
+	case 1:
+		return fmt.Errorf("missing access filename")
+	case 2:
+		verb, fName = args[0], args[1]
+		args = []string{}
+	default:
+		verb, fName, args = args[0], args[1], args[2:]
+	}
+	a, err := wsfn.LoadAccess(fName)
+	if err != nil {
+		return err
+	}
+	switch verb {
+	case "list":
+		return listRoutes(a)
+	case "update":
+		return updateRoutes(fName, a, args)
+	case "remove":
+		return removeRoutes(fName, a, args)
+	default:
+		return fmt.Errorf("Unknown route action, %q", verb)
+	}
+}
+
 func main() {
 	app := cli.NewCli(wsfn.Version)
 	appName := app.AppName()
 
 	// Document non-option parameters
-	app.SetParams(`ACCESS_TOML VERB [PARAMETER]`)
+	app.SetParams(`VERB TOML_FILENAME [PARAMETER]`)
 
 	// Add Help Docs
 	app.AddHelp("license", []byte(fmt.Sprintf(wsfn.LicenseText, appName, wsfn.Version)))
 	app.AddHelp("description", []byte(fmt.Sprintf(description, appName, appName)))
-	app.AddHelp("examples", []byte(fmt.Sprintf(examples, appName, appName, appName, appName, appName)))
+	app.AddHelp("examples", []byte(fmt.Sprintf(examples, appName, appName, appName, appName, appName, appName, appName)))
 
 	// Standard Options
-	app.BoolVar(&showHelp, "h", false, "display help")
-	app.BoolVar(&showHelp, "help", false, "display help")
-	app.BoolVar(&showLicense, "l", false, "display license")
-	app.BoolVar(&showLicense, "license", false, "display license")
-	app.BoolVar(&showVersion, "v", false, "display version")
-	app.BoolVar(&showVersion, "version", false, "display version")
+	app.BoolVar(&showHelp, "h,help", false, "display help")
+	app.BoolVar(&showLicense, "l,license", false, "display license")
+	app.BoolVar(&showVersion, "v,version", false, "display version")
 	app.BoolVar(&showExamples, "example", false, "display example(s)")
 	app.BoolVar(&generateMarkdown, "generate-markdown", false, "generate markdown documentation")
 	app.BoolVar(&generateManPage, "generate-manpage", false, "generate man page")
@@ -278,15 +305,27 @@ func main() {
 		os.Exit(0)
 	}
 
-	fName, verb, userid := "", "", ""
+	verb, fName, userid := "", "", ""
 	switch len(args) {
 	case 3:
-		fName, verb, userid = args[0], args[1], args[2]
+		verb, fName, userid = args[0], args[1], args[2]
 	case 2:
-		fName, verb, userid = args[0], args[1], ""
-	default:
-		fmt.Fprintf(os.Stderr, "Incomplete command, try %s -help", appName)
+		verb, fName, userid = args[0], args[1], ""
+	case 1:
+		verb, fName, userid = args[0], "", ""
+		if strings.Compare(verb, "routes") != 0 {
+			fmt.Fprintf(os.Stderr, "Missing action and parameters\ntry %s -h\n", appName)
+			os.Exit(1)
+		}
+	case 0:
+		app.Usage(os.Stderr)
 		os.Exit(1)
+	default:
+		verb, fName, userid = args[0], "", ""
+		if strings.Compare(verb, "routes") != 0 {
+			fmt.Fprintf(os.Stderr, "To many parameters, try %s -help\n", appName, appName)
+			os.Exit(1)
+		}
 	}
 
 	switch verb {
@@ -329,9 +368,14 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Fprintf(os.Stdout, "OK\n")
-		os.Exit(0)
+	case "routes":
+		if err = manageRoutes(args[1:]); err != nil {
+			fmt.Fprintf(os.Stderr, "%s %s, failed\n%s\n", appName,
+				strings.Join(args, " "), err)
+			os.Exit(1)
+		}
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown command, try %s -help", appName)
+		fmt.Fprintf(os.Stderr, "Unknown action %q, try %s -help\n", verb, appName)
 		os.Exit(1)
 	}
 }

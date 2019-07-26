@@ -30,6 +30,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 	"golang.org/x/crypto/argon2"
@@ -59,6 +60,9 @@ type Access struct {
 	// after reading in the users file with LoadAccessTOML() or
 	// LoadAccessJSON().
 	Map map[string]*Secrets `json:"access" toml:"access"`
+	// Routes is a list of URL path prefixes covered by
+	// this Access control object.
+	Routes []string `json:"routes" toml:"routes"`
 }
 
 type Secrets struct {
@@ -71,9 +75,21 @@ type Secrets struct {
 	Key []byte `json:"key, omitempty" toml:"key,omitempty"`
 }
 
-// LoadAccessTOML loads a users authorization TOML file.
+// LoadAccess loads a TOML or JSON access file.
+func LoadAccess(fName string) (*Access, error) {
+	switch {
+	case strings.HasSuffix(fName, ".toml"):
+		return loadAccessTOML(fName)
+	case strings.HasSuffix(fName, ".json"):
+		return loadAccessJSON(fName)
+	default:
+		return nil, fmt.Errorf("%q, unsupported format", fName)
+	}
+}
+
+// loadAccessTOML loads a TOML acces file.
 // and returns an Access struct and error.
-func LoadAccessTOML(accessTOML string) (*Access, error) {
+func loadAccessTOML(accessTOML string) (*Access, error) {
 	auth := new(Access)
 	src, err := ioutil.ReadFile(accessTOML)
 	if err != nil {
@@ -85,9 +101,9 @@ func LoadAccessTOML(accessTOML string) (*Access, error) {
 	return auth, nil
 }
 
-// LoadAccessJSON loads a users authorization JSON file.
+// loadAccessJSON loads a JSON access file.
 // and returns an Access struct and error.
-func LoadAccessJSON(accessJSON string) (*Access, error) {
+func loadAccessJSON(accessJSON string) (*Access, error) {
 	auth := new(Access)
 	src, err := ioutil.ReadFile(accessJSON)
 	if err != nil {
@@ -99,8 +115,20 @@ func LoadAccessJSON(accessJSON string) (*Access, error) {
 	return auth, nil
 }
 
-// DumpAccessTOML writes a access.toml file.
-func (a *Access) DumpAccessTOML(accessTOML string) error {
+// DumpAccess writes a access file.
+func (a *Access) DumpAccess(fName string) error {
+	switch {
+	case strings.HasSuffix(fName, ".toml"):
+		return a.dumpAccessTOML(fName)
+	case strings.HasSuffix(fName, ".json"):
+		return a.dumpAccessJSON(fName)
+	default:
+		return fmt.Errorf("%q, unsupported format", fName)
+	}
+}
+
+// dumpAccessTOML writes a TOML access file.
+func (a *Access) dumpAccessTOML(accessTOML string) error {
 	buf := new(bytes.Buffer)
 	tomlEncoder := toml.NewEncoder(buf)
 	if err := tomlEncoder.Encode(a); err != nil {
@@ -109,8 +137,8 @@ func (a *Access) DumpAccessTOML(accessTOML string) error {
 	return ioutil.WriteFile(accessTOML, buf.Bytes(), 0600)
 }
 
-// DumpAccessJSON writes an access.toml file.
-func (a *Access) DumpAccessJSON(accessJSON string) error {
+// dumpAccessJSON writes an access.toml file.
+func (a *Access) dumpAccessJSON(accessJSON string) error {
 	src, err := json.MarshalIndent(a, "", "    ")
 	if err != nil {
 		return err

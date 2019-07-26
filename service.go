@@ -41,8 +41,9 @@ type WebService struct {
 	// Http describes an Http service
 	Http *Service `json:"http,omitempty" toml:"http,omitempty"`
 
-	// BasicAUTH describes the configuration of BasicAUTH protected paths
-	//BasicAUTH *BasicAuth `json:"basic_auth,omitempty" toml:"basic_auth,omiteempty"`
+	// Access adds access related features to the service.
+	// E.g. BasicAUTH support.
+	Access *Access `json:"access,omitempty" toml:"access,omitempty"`
 
 	// CORS describes the CORS policy for the web services
 	CORS *CORSPolicy `json:"cors,omitempty" toml:"cors,omitempty"`
@@ -165,6 +166,8 @@ func (w *WebService) Run() error {
 	fs := w.SafeFileSystem()
 	mux := http.NewServeMux()
 	//FIXME: Figure out how I want to stack up my handlers...
+	if w.Access != nil {
+	}
 
 	// Setup our default file service handler.
 	mux.Handle("/", RequestLogger(http.FileServer(fs)))
