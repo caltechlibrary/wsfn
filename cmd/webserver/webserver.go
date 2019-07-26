@@ -21,6 +21,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -30,6 +31,9 @@ import (
 	// Caltech Library packages
 	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/wsfn"
+
+	// 3rd Party packages
+	"github.com/BurntSushi/toml"
 )
 
 // Flag options
@@ -58,13 +62,15 @@ ACTIONS
 The following actions are available
 
 + init     creates a %q file.
++ start    starts up the web service
 + htdocs   sets the document root
 + cert_pem set the path to find cert.pem file for TLS
 + key_pem  set the path to find the key.pem file for TLS
 + auth     set auth type if used, e.g. Basic
 + access   sets an external access file
 
-To configure an external access file use the "webaccess" tool.
+    (The external access file is managed with
+     the "webaccess" tool.)
 
 `
 
@@ -72,15 +78,15 @@ To configure an external access file use the "webaccess" tool.
 Run web server using the content in the current directory
 (assumes there is no "%s" file in the working directory).
 
-   %s
+   %s start
 
 Run web server using a specified directory
 
-   %s /www/htdocs
+   %s start /www/htdocs
 
 Running web server using a "/etc/%s" file for configuration.
 
-   %s /etc/%s
+   %s start /etc/%s
 
 Running the web server using the basic setup of "/etc/%s"
 and overriding the default htdocs root and URL listened on
@@ -111,6 +117,9 @@ Configure your web server with
 
 // initWebService creates an initialization file.
 func initWebService(args []string) error {
+	var (
+		err error
+	)
 	fName := "webservice.toml"
 	switch {
 	case len(args) > 1:
@@ -118,7 +127,20 @@ func initWebService(args []string) error {
 	case len(args) == 1:
 		fName = args[0]
 	}
+	if _, err = os.Stat(fName); os.IsNotExist(err) == false {
+		return fmt.Errorf("%q already exists", fName)
+	}
 	src := wsfn.DefaultInit()
+	if strings.HasSuffix(fName, ".json") {
+		o := new(wsfn.WebService)
+		if _, err = toml.Decode(string(src), &o); err != nil {
+			return err
+		}
+		src, err = json.MarshalIndent(o, "", "    ")
+		if err != nil {
+			return err
+		}
+	}
 	return ioutil.WriteFile(fName, src, 0660)
 }
 
@@ -136,6 +158,26 @@ func setDocRootWebService(args []string) error {
 		return err
 	}
 	ws.DocRoot = docRoot
+	return ws.DumpWebService(fName)
+}
+
+// setAccessFile sets the access file
+func setAccessFile(args []string) error {
+	fName, accessFile := "", ""
+	switch {
+	case len(args) == 2:
+		fName, accessFile = args[0], args[1]
+	default:
+		return fmt.Errorf("expecting web service filename and a single access filename")
+	}
+	if _, err := os.Stat(accessFile); os.IsNotExist(err) {
+		return fmt.Errorf("%q, %s", accessFile, err)
+	}
+	ws, err := wsfn.LoadWebService(fName)
+	if err != nil {
+		return err
+	}
+	ws.AccessFile = accessFile
 	return ws.DumpWebService(fName)
 }
 
@@ -244,6 +286,73 @@ func setKeyPEM(args []string) error {
 	return ws.DumpWebService(fName)
 }
 
+func startService(args []string) error {
+	var (
+		cfg string
+		ws  *wsfn.WebService
+		err error
+	)
+	// check for local config
+	if _, err := os.Stat("webserver.toml"); os.IsNotExist(err) == false {
+		cfg = "webserver.toml"
+	} else if _, err := os.Stat("webserver.json"); os.IsNotExist(err) == false {
+		cfg = "webserver.json"
+	}
+	// Load a default configuration
+	if cfg != "" {
+		ws, err = wsfn.LoadWebService(cfg)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%q, %s\n", cfg, err)
+			os.Exit(1)
+		}
+	} else {
+		ws = wsfn.DefaultWebService()
+	}
+	// Adhoc overrides
+	for _, arg := range args {
+		switch {
+		case strings.HasSuffix(arg, ".toml") || strings.HasSuffix(arg, ".json"):
+			ws, err = wsfn.LoadWebService(arg)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%q failed, %s\n", arg, err)
+				os.Exit(1)
+			}
+		case strings.Contains(arg, "://"):
+			u, err := url.Parse(arg)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "url parse %s, %s\n", arg, err)
+				os.Exit(1)
+			}
+			host := u.Host
+			port := ""
+			if strings.Contains(u.Host, ":") {
+				p := strings.SplitN(u.Host, ":", 2)
+				host, port = p[0], p[1]
+			}
+			switch u.Scheme {
+			case "http":
+				ws.Http.Scheme = u.Scheme
+				ws.Http.Host = host
+				ws.Http.Port = port
+			case "https":
+				ws.Https.Scheme = u.Scheme
+				ws.Https.Host = host
+				ws.Https.Port = port
+			default:
+				fmt.Fprintf(os.Stderr, "Unsupported scheme %q", u.String())
+				os.Exit(1)
+			}
+		default:
+			ws.DocRoot = arg
+		}
+	}
+	// Now we should be ready to run the web server
+	if err = ws.Run(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func main() {
 	app := cli.NewCli(wsfn.Version)
 	appName := app.AppName()
@@ -304,96 +413,55 @@ func main() {
 		os.Exit(0)
 	}
 
-	// setup from command line
-	webservice := wsfn.DefaultWebService()
-	if _, err := os.Stat("webserver.toml"); os.IsNotExist(err) == false {
-		webservice, err = wsfn.LoadWebService("webserver.toml")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "toml parse %s, %s\n", "webserver.toml", err)
-			os.Exit(1)
-		}
-	} else if _, err := os.Stat("webserver.json"); os.IsNotExist(err) == false {
-		webservice, err = wsfn.LoadWebService("webserver.json")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "json parse %s, %s\n", "webserver.json", err)
-			os.Exit(1)
-		}
-	}
 	if len(args) == 0 {
-		// Now we should be ready to run the web server
-		if err = webservice.Run(); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
-			os.Exit(1)
-		}
+		app.Usage(os.Stderr)
+		fmt.Fprintf(os.Stderr, "Missing an action (e.g. start, init)\n")
+		os.Exit(1)
 	}
-	switch args[0] {
+	verb, args := args[0], args[1:]
+	switch verb {
 	case "init":
-		if err := initWebService(args[1:]); err != nil {
+		if err := initWebService(args); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
 	case "htdocs":
-		if err := setDocRootWebService(args[1:]); err != nil {
+		if err := setDocRootWebService(args); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
 	case "url":
-		if err := setURL(args[1:]); err != nil {
+		if err := setURL(args); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
 	case "cert_pem":
-		if err := setCertPEM(args[1:]); err != nil {
+		if err := setCertPEM(args); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
 	case "key_pem":
-		if err := setKeyPEM(args[1:]); err != nil {
+		if err := setKeyPEM(args); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
-	}
-	// Adhoc command overrides
-	for _, arg := range args {
-		switch {
-		case strings.HasSuffix(arg, ".toml") || strings.HasSuffix(arg, ".json"):
-			webservice, err = wsfn.LoadWebService(arg)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%q failed, %s\n", arg, err)
-				os.Exit(1)
-			}
-		case strings.Contains(arg, "://"):
-			u, err := url.Parse(arg)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "url parse %s, %s\n", arg, err)
-				os.Exit(1)
-			}
-			host := u.Host
-			port := ""
-			if strings.Contains(u.Host, ":") {
-				p := strings.SplitN(u.Host, ":", 2)
-				host, port = p[0], p[1]
-			}
-			switch u.Scheme {
-			case "http":
-				webservice.Http.Scheme = u.Scheme
-				webservice.Http.Host = host
-				webservice.Http.Port = port
-			case "https":
-				webservice.Https.Scheme = u.Scheme
-				webservice.Https.Host = host
-				webservice.Https.Port = port
-			default:
-				fmt.Fprintf(os.Stderr, "Unsupported scheme %q", u.String())
-				os.Exit(1)
-			}
-		default:
-			webservice.DocRoot = arg
+	case "access":
+		if err := setAccessFile(args); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
 		}
+	case "start":
+		if err := startService(args); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown action %q\n", verb)
+		os.Exit(1)
 	}
 }

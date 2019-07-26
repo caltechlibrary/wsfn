@@ -29,6 +29,7 @@ import (
 	"os"
 	"strings"
 
+	// 3rd Party packages
 	"github.com/BurntSushi/toml"
 )
 
@@ -82,9 +83,9 @@ type Service struct {
 	// An empty strings defaults port to 8000
 	Port string `json:"port,omitempty" toml:"port,omitempty"`
 	// CertPEM describes the location of cert.pem used for TLS support
-	CertPEM string `json:"cert_pem" toml:"cert_pem"`
+	CertPEM string `json:"cert_pem,omitempty" toml:"cert_pem,omitempty"`
 	// KeyPEM describes the location of the key.pem used for TLS support
-	KeyPEM string `json:"key_pem" toml:"key_pem"`
+	KeyPEM string `json:"key_pem,omitempty" toml:"key_pem,omitempty"`
 }
 
 // String renders an URL version of *Service.

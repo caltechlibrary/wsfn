@@ -42,7 +42,7 @@ func DefaultInit() []byte {
 	return []byte(`
 #
 # A TOML file example for configuring **webserver**.
-# Lines starting with "#" are comments.
+# Comments start with "#"
 #
 
 # 
@@ -55,6 +55,29 @@ func DefaultInit() []byte {
 # directory.
 htdocs = "htdocs"
 
+#
+# If using access restrictions (e.g. basic auth)
+# set the file for managing access.
+# Uncomment to use.
+#
+#access_file = "access.toml"
+
+#
+# Use redirects in a separate file (e.g. JSON, TOML, CSV).
+# Uncomment to use.
+#
+#redirects_file = "redirects.csv"
+
+#
+# Managing content types in a separate file (e.g. JSON, TOML, CSV)
+# Uncomment to use.
+#
+#content_types_file = "content-types.csv"
+
+# Setting up standard http support
+[http]
+host = "localhost"
+port = "8000"
 
 # Setting up HTTPS scheme support, uncomment for https support
 #[https]
@@ -62,23 +85,6 @@ htdocs = "htdocs"
 #key_pem = "etc/certs/key_pem"
 #host = "localhost"
 #port = "8443"
-
-# Setting up standard http support
-[http]
-host = "localhost"
-port = "8000"
-
-#
-# Configure HTTP Basic AUTH
-# Example if uncommented would protect the /api/ path.
-#
-# paths = is a list of protected web server paths to protect
-# passwords = is a path to a file in Apache htpasswd format to
-# use for Baisc AUTH.
-#
-#[basic_auth]
-#paths = [ "/api/" ]
-#passwords = "etc/ws-api-passwords"
 
 #
 # CORS policy configuration example adpated from 
@@ -94,7 +100,8 @@ port = "8000"
 #Access_Control_Max_Age = 86400
 
 #
-# Mapping file extensions to mime types
+# Managing file extensions to mime types in the
+# file.
 #
 # Uncomment to use.
 #[content_types]
@@ -102,30 +109,19 @@ port = "8000"
 #".toml" = "text/plain+x-toml"
 
 #
-# Redirects are specified in CSV file format.
-# first column is the target, second the destination
+# Managing redirects in this file.
 #
 # Uncomment to use.
-#
-#redirects_csv = "redirects.csv"
-
-#
-# Redirects are specified in this file.
-#
-# Uncomment and edit to use.
 #[redirects]
 #"http://localhost:8000/" = "https://localhost:8443/"
 #"/bad-path/" = "/good-path/"
 
 #
-# reverse-proxy examples
+# Managin reverse-proxy in this file.
 #
-# Uncomment and edit to use.
+# Uncomment to use.
 #[reverse_proxy]
 #"/api/" = "http://localhost:9000/"
 
-# To added access configuration using webaccess tool.
-#[access]
-# ...
 `)
 }
