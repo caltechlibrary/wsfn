@@ -124,5 +124,8 @@ port = "8000"
 #[reverse_proxy]
 #"/api/" = "http://localhost:9000/"
 
+# To added access configuration using webaccess tool.
+#[access]
+# ...
 `)
 }

@@ -49,11 +49,10 @@ user access to web services built on wsfn.
 
 CONFIGURATION
 
-%s generates/manages a TOML file usually named "access.toml". 
-The following is an example.
+%s provides a command line interface for managing
+an access file. It provides the ability to 
+setup users as well as protected routes.
 
-` + "```" + `toml
-` + "```" + `
 `
 
 	examples = `

@@ -20,7 +20,9 @@
 package wsfn
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -40,6 +42,10 @@ type WebService struct {
 	Https *Service `json:"https,omitempty" toml:"https,omitempty"`
 	// Http describes an Http service
 	Http *Service `json:"http,omitempty" toml:"http,omitempty"`
+
+	// AccessFile holds a name of an access file to load and
+	// populate .Access from.
+	AccessFile string `json:"access_file,omitempty" toml:"access_file,omitempty"`
 
 	// Access adds access related features to the service.
 	// E.g. BasicAUTH support.
@@ -103,8 +109,33 @@ func (s *Service) Hostname() string {
 	return strings.Join(r, "")
 }
 
-// LoadTOML loads a configuration of *WebService from a TOML file.
-func LoadTOML(setup string) (*WebService, error) {
+// LoadWebService loads a configuration file of *WebService
+func LoadWebService(setup string) (*WebService, error) {
+	var (
+		ws  *WebService
+		err error
+	)
+
+	switch {
+	case strings.HasSuffix(setup, ".toml"):
+		ws, err = loadWebServiceTOML(setup)
+	case strings.HasSuffix(setup, ".json"):
+		ws, err = loadWebServiceJSON(setup)
+	default:
+		err = fmt.Errorf("%q, unknown format.", setup)
+	}
+	if err != nil {
+		return nil, err
+	}
+	// If AccessFile set is set overwrite .Access ...
+	if ws.AccessFile != "" {
+		ws.Access, err = LoadAccess(ws.AccessFile)
+	}
+	return ws, err
+}
+
+// loadWebServiceTOML loads a *WebService from a TOML file.
+func loadWebServiceTOML(setup string) (*WebService, error) {
 	src, err := ioutil.ReadFile(setup)
 	if err != nil {
 		return nil, err
@@ -125,8 +156,8 @@ func LoadTOML(setup string) (*WebService, error) {
 	return w, nil
 }
 
-// LoadJSON loads a configuration of *WebService from a JSON file.
-func LoadJSON(setup string) (*WebService, error) {
+// loadWebServiceJSON loads a *WebService from a JSON file.
+func loadWebServiceJSON(setup string) (*WebService, error) {
 	src, err := ioutil.ReadFile(setup)
 	if err != nil {
 		return nil, err
@@ -145,6 +176,49 @@ func LoadJSON(setup string) (*WebService, error) {
 		w.Https.Scheme = "https"
 	}
 	return w, nil
+}
+
+// DumpWebService writes a access file.
+func (ws *WebService) DumpWebService(fName string) error {
+	var (
+		access *Access
+		err    error
+	)
+	if ws.AccessFile != "" && ws.Access != nil {
+		access = ws.Access
+		ws.Access = nil
+	}
+	switch {
+	case strings.HasSuffix(fName, ".toml"):
+		err = ws.dumpWebServiceTOML(fName)
+	case strings.HasSuffix(fName, ".json"):
+		err = ws.dumpWebServiceJSON(fName)
+	default:
+		err = fmt.Errorf("%q, unsupported format", fName)
+	}
+	if access != nil {
+		ws.Access = access
+	}
+	return err
+}
+
+// dumpWebServiceTOML writes a TOML file.
+func (ws *WebService) dumpWebServiceTOML(fName string) error {
+	buf := new(bytes.Buffer)
+	tomlEncoder := toml.NewEncoder(buf)
+	if err := tomlEncoder.Encode(ws); err != nil {
+		return err
+	}
+	return ioutil.WriteFile(fName, buf.Bytes(), 0600)
+}
+
+// dumpWebServiceJSON writes a JSON file.
+func (ws *WebService) dumpWebServiceJSON(fName string) error {
+	src, err := json.MarshalIndent(ws, "", "    ")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(fName, src, 0600)
 }
 
 // Run() starts a web service(s) described in the *WebService struct.
