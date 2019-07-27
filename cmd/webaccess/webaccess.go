@@ -61,8 +61,7 @@ Create an empty "access.toml" file.
    %s init access.toml
 
 Add user id "Jane.Doe" to "access.toml".
-The access program prompts for a password. It will 
-create "access.toml" if it doesn't exist.
+The access program prompts for a password. 
 
    %s update access.toml Jane.Doe
 
@@ -100,6 +99,12 @@ Routes follow a similar pattern of update, list, remove.
 )
 
 func initAccess(fName string) error {
+	if fName == "" {
+		fName = "access.toml"
+	}
+	if _, err := os.Stat(fName); os.IsNotExist(err) == false {
+		return fmt.Errorf("%q already exists", fName)
+	}
 	a := new(wsfn.Access)
 	a.AuthType = "basic"
 	a.Encryption = "argon2id"
@@ -107,12 +112,6 @@ func initAccess(fName string) error {
 }
 
 func updateAccess(fName, username, password string) error {
-	// See if fName exists
-	if _, err := os.Stat(fName); os.IsNotExist(err) {
-		if err := initAccess(fName); err != nil {
-			return err
-		}
-	}
 	a, err := wsfn.LoadAccess(fName)
 	if err != nil {
 		return err
@@ -181,6 +180,9 @@ func updateRoutes(fName string, a *wsfn.Access, args []string) error {
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "/") == false {
 			arg = "/" + arg
+		}
+		if strings.HasSuffix(arg, "/") == false {
+			arg += "/"
 		}
 		for _, route := range a.Routes {
 			if strings.HasPrefix(arg, route) || strings.HasPrefix(route, arg) {
@@ -312,7 +314,7 @@ func main() {
 		verb, fName, userid = args[0], args[1], ""
 	case 1:
 		verb, fName, userid = args[0], "", ""
-		if strings.Compare(verb, "routes") != 0 {
+		if strings.Compare(verb, "routes") == 0 {
 			fmt.Fprintf(os.Stderr, "Missing action and parameters\ntry %s -h\n", appName)
 			os.Exit(1)
 		}

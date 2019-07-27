@@ -238,29 +238,31 @@ func (w *WebService) Run() error {
 	if w.Https != nil {
 		log.Printf("Listening for %s", w.Https.String())
 	}
-	fs := w.SafeFileSystem()
-	mux := http.NewServeMux()
-	//FIXME: Figure out how I want to stack up my handlers...
-	if w.Access != nil {
-	}
 
-	// Setup our default file service handler.
-	mux.Handle("/", RequestLogger(http.FileServer(fs)))
+	// Setup our Safe file system handler.
+	fs := w.SafeFileSystem()
+
+	//FIXME: Figure out a better way to stack up handlers...
+	if w.Access != nil {
+		http.Handle("/", RequestLogger(AccessHandler(http.FileServer(fs), w.Access)))
+	} else {
+		http.Handle("/", RequestLogger(http.FileServer(fs)))
+	}
 
 	// Run the configured services.
 	switch {
 	case w.Http != nil && w.Https != nil:
 		// Run our http service in a go routine
-		go func(addr string, handler http.Handler) {
-			http.ListenAndServe(addr, handler)
-		}(w.Http.Hostname(), mux)
-		// Return our primar https service routine
-		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, mux)
+		go func() {
+			http.ListenAndServe(w.Http.Hostname(), nil)
+		}()
+		// Return our primary https service routine
+		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, nil)
 	case w.Https != nil:
-		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, mux)
+		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, nil)
 	case w.Http != nil:
-		return http.ListenAndServe(w.Http.Hostname(), mux)
+		return http.ListenAndServe(w.Http.Hostname(), nil)
 	default:
-		return http.ListenAndServe(":8000", mux)
+		return http.ListenAndServe(":8000", nil)
 	}
 }

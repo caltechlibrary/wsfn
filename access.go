@@ -246,20 +246,34 @@ func (a *Access) Login(username string, password string) bool {
 	return false
 }
 
-// BasicAUTH is a wrapping handler for apply BasicAUTH rules.
-func (a *Access) BasicAUTH(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, a.AuthName))
-		// Check to see if we've previously authenticated.
-		username, password, ok := r.BasicAuth()
-		if ok == false {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
+// Checks to see if we have a defined route.
+func (a *Access) isAccessRoute(p string) bool {
+	for _, route := range a.Routes {
+		if strings.HasPrefix(p, route) {
+			return true
 		}
-		if a.Login(username, password) == false {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-		next(w, r)
 	}
+	return false
+}
+
+// AccessHandler is a wrapping handler that checks if
+// Access.Routes matches the req.URL.Path and if so
+// applies access contraints.
+func AccessHandler(next http.Handler, a *Access) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		if a.isAccessRoute(req.URL.Path) {
+			res.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, a.AuthName))
+			// Check to see if we've previously authenticated.
+			username, password, ok := req.BasicAuth()
+			if ok == false {
+				http.Error(res, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			if a.Login(username, password) == false {
+				http.Error(res, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+		}
+		next.ServeHTTP(res, req)
+	})
 }
