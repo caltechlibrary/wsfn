@@ -258,8 +258,14 @@ func (a *Access) isAccessRoute(p string) bool {
 
 // AccessHandler is a wrapping handler that checks if
 // Access.Routes matches the req.URL.Path and if so
-// applies access contraints.
+// applies access contraints. If *Access is nil then
+// it just passes through to the next handler.
 func AccessHandler(next http.Handler, a *Access) http.Handler {
+	if a == nil {
+		return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+			next.ServeHTTP(res, req)
+		})
+	}
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		if a.isAccessRoute(req.URL.Path) {
 			res.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, a.AuthName))
