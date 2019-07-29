@@ -256,6 +256,33 @@ func (a *Access) isAccessRoute(p string) bool {
 	return false
 }
 
+// Handler takes a handler and returns handler. If
+// *Access is null it pass thru unchanged. Otherwise
+// it applies the access policy.
+func (a *Access) Handler(next http.Handler) http.Handler {
+	if a == nil {
+		return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+			next.ServeHTTP(res, req)
+		})
+	}
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		if a.isAccessRoute(req.URL.Path) {
+			res.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, a.AuthName))
+			// Check to see if we've previously authenticated.
+			username, password, ok := req.BasicAuth()
+			if ok == false {
+				http.Error(res, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			if a.Login(username, password) == false {
+				http.Error(res, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+		}
+		next.ServeHTTP(res, req)
+	})
+}
+
 // AccessHandler is a wrapping handler that checks if
 // Access.Routes matches the req.URL.Path and if so
 // applies access contraints. If *Access is nil then

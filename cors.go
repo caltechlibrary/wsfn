@@ -38,10 +38,16 @@ type CORSPolicy struct {
 	AllowCredentials bool `json:"allow_credentials,omitempty" toml:"allow_credentials,omitempty"`
 }
 
-// Handle accepts an http.Handler and returns a http.Handler. It
+// Handler accepts an http.Handler and returns a http.Handler. It
 // Wraps the response with the CORS headers based on configuration
-// in CORSPolicy struct.
-func (cors *CORSPolicy) Handle(next http.Handler) http.Handler {
+// in CORSPolicy struct. If cors is nil then it passes thru
+// to next http.Handler unaltered.
+func (cors *CORSPolicy) Handler(next http.Handler) http.Handler {
+	if cors == nil {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			next.ServeHTTP(w, r)
+		})
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if cors.Origin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", cors.Origin)
