@@ -78,7 +78,6 @@ func (sf SafeFile) Readdir(n int) ([]os.FileInfo, error) {
 // SafeFileSystem. It serves a 403 permision error when name has
 // a file or directory who's path parts is a dot file prefix.
 func (fs SafeFileSystem) Open(p string) (http.File, error) {
-	log.Printf("DEBUG checking %q", p)
 	if hasDotPrefix(p) {
 		// If dot file setup to return a 403 response by
 		// passing an OS level file permission error
@@ -115,7 +114,6 @@ func (w *WebService) SafeFileSystem() (SafeFileSystem, error) {
 	} else if info.IsDir() == false {
 		return SafeFileSystem{}, fmt.Errorf("%q is not a directory", w.DocRoot)
 	}
-	log.Printf("DEBUG Using %s for document root", w.DocRoot)
 	return SafeFileSystem{http.Dir(w.DocRoot)}, nil
 }
 
@@ -141,6 +139,5 @@ func MakeSafeFileSystem(docRoot string) (SafeFileSystem, error) {
 	} else if info.IsDir() == false {
 		return SafeFileSystem{}, fmt.Errorf("%q is not a directory", docRoot)
 	}
-	log.Printf("DEBUG Using %s for document root", docRoot)
 	return SafeFileSystem{http.Dir(docRoot)}, nil
 }

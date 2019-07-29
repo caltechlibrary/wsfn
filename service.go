@@ -244,7 +244,6 @@ func (w *WebService) Run() error {
 	if err != nil {
 		return err
 	}
-	log.Printf("DEBUG should have a safe file system now ...")
 
 	//FIXME: Figure out a better way to stack up handlers...
 	mux := http.NewServeMux()
