@@ -20,6 +20,7 @@
 package wsfn
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -96,12 +97,46 @@ func (fs SafeFileSystem) Open(p string) (http.File, error) {
 // Example usage:
 //
 // ws := wsfn.LoadTOML("web-service.toml")
+// fs, err := ws.SafeFileSystem()
+// if err != nil {
+//     log.Fatalf("%s\n", err)
+// }
 // http.Handle("/", http.FileServer(ws.SafeFileSystem()))
 // log.Fatal(http.ListenAndService(ws.Http.Hostname(), nil))
 //
-func (w *WebService) SafeFileSystem() SafeFileSystem {
+func (w *WebService) SafeFileSystem() (SafeFileSystem, error) {
 	if w.DocRoot == "" {
 		w.DocRoot = "."
 	}
-	return SafeFileSystem{http.Dir(w.DocRoot)}
+	if info, err := os.Stat(w.DocRoot); err != nil {
+		return SafeFileSystem{}, err
+	} else if info.IsDir() == false {
+		return SafeFileSystem{}, fmt.Errorf("%q is not a directory", w.DocRoot)
+	}
+	return SafeFileSystem{http.Dir(w.DocRoot)}, nil
+}
+
+//
+// MakeSafeFileSystem without a *WebService takes a doc root
+// and returns a SafeFileSystem struct.
+//
+// Example usage:
+//
+// fs, err := MakeSafeFileSystem("/var/www/htdocs")
+// if err != nil {
+//     log.Fatalf("%s\n", err)
+// }
+// http.Handle("/", http.FileServer(fs))
+// log.Fatal(http.ListenAndService(":8000", nil))
+//
+func MakeSafeFileSystem(docRoot string) (SafeFileSystem, error) {
+	if docRoot == "" {
+		return SafeFileSystem{}, fmt.Errorf("document root not set")
+	}
+	if info, err := os.Stat(docRoot); err != nil {
+		return SafeFileSystem{}, err
+	} else if info.IsDir() == false {
+		return SafeFileSystem{}, fmt.Errorf("%q is not a directory", docRoot)
+	}
+	return SafeFileSystem{http.Dir(docRoot)}, nil
 }

@@ -240,7 +240,10 @@ func (w *WebService) Run() error {
 	}
 
 	// Setup our Safe file system handler.
-	fs := w.SafeFileSystem()
+	fs, err := w.SafeFileSystem()
+	if err != nil {
+		return err
+	}
 
 	//FIXME: Figure out a better way to stack up handlers...
 	if w.Access != nil {
