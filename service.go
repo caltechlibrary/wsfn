@@ -244,28 +244,26 @@ func (w *WebService) Run() error {
 	if err != nil {
 		return err
 	}
+	log.Printf("DEBUG should have a safe file system now ...")
 
 	//FIXME: Figure out a better way to stack up handlers...
-	if w.Access != nil {
-		http.Handle("/", RequestLogger(AccessHandler(http.FileServer(fs), w.Access)))
-	} else {
-		http.Handle("/", RequestLogger(http.FileServer(fs)))
-	}
+	mux := http.NewServeMux()
+	mux.Handle("/", http.FileServer(fs))
 
 	// Run the configured services.
 	switch {
 	case w.Http != nil && w.Https != nil:
 		// Run our http service in a go routine
 		go func() {
-			http.ListenAndServe(w.Http.Hostname(), nil)
+			http.ListenAndServe(w.Http.Hostname(), RequestLogger(AccessHandler(mux, w.Access)))
 		}()
 		// Return our primary https service routine
-		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, nil)
+		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, RequestLogger(AccessHandler(mux, w.Access)))
 	case w.Https != nil:
-		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, nil)
+		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, RequestLogger(AccessHandler(mux, w.Access)))
 	case w.Http != nil:
-		return http.ListenAndServe(w.Http.Hostname(), nil)
+		return http.ListenAndServe(w.Http.Hostname(), RequestLogger(AccessHandler(mux, w.Access)))
 	default:
-		return http.ListenAndServe(":8000", nil)
+		return http.ListenAndServe(":8000", RequestLogger(AccessHandler(mux, w.Access)))
 	}
 }

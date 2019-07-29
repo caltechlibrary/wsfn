@@ -22,12 +22,14 @@ build: bin/webserver$(EXT) bin/webaccess$(EXT)
 bin/webserver$(EXT): access.go cors.go \
 	defaults.go json.go license.go logger.go \
 	redirects.go service.go wsfn.go \
+	safefilesystem.go \
 	cmd/webserver/webserver.go
 	go build -o bin/webserver$(EXT) cmd/webserver/webserver.go
 
 bin/webaccess$(EXT): access.go cors.go \
 	defaults.go json.go license.go logger.go \
 	redirects.go service.go wsfn.go \
+	safefilesystem.go \
 	cmd/webaccess/webaccess.go
 	go build -o bin/webaccess$(EXT) cmd/webaccess/webaccess.go
 
@@ -44,6 +46,7 @@ lint:
 	golint service.go
 	golint wsfn.go
 	golint wsfn_test.go
+	goling safefilesystem.go
 	golint cmd/webserver/webserver.go
 	golint cmd/webaccess/webaccess.go
 
@@ -59,7 +62,8 @@ format:
 	gofmt -w redirects.go
 	gofmt -w service.go
 	gofmt -w wsfn.go
-	gofmt -w wsfn_test.go
+	gofmt -w wsfn_test.go  
+	gofmt -w safefilesystem.go
 	gofmt -w cmd/webserver/webserver.go
 	gofmt -w cmd/webaccess/webaccess.go
 

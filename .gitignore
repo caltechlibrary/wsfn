@@ -32,6 +32,8 @@ bin/*
 dist/*
 test.json
 test.toml
+webservice.toml
 access.toml
 workflows.toml
 users.toml
+htdocs/*
