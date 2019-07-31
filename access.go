@@ -256,9 +256,9 @@ func (a *Access) isAccessRoute(p string) bool {
 	return false
 }
 
-// GetUser takes an Request object, inspects the headers
+// GetUsername takes an Request object, inspects the headers
 // and returns the username if possible, otherwise an error.
-func (a *Access) GetUser(r *http.Request) (string, error) {
+func (a *Access) GetUsername(r *http.Request) (string, error) {
 	switch a.AuthType {
 	case "basic":
 		username, _, ok := r.BasicAuth()
