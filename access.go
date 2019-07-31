@@ -256,6 +256,21 @@ func (a *Access) isAccessRoute(p string) bool {
 	return false
 }
 
+// GetUser takes an Request object, inspects the headers
+// and returns the username if possible, otherwise an error.
+func (a *Access) GetUser(r *http.Request) (string, error) {
+	switch a.AuthType {
+	case "basic":
+		username, _, ok := r.BasicAuth()
+		if ok == true {
+			return username, nil
+		}
+		return "", fmt.Errorf("No user info found")
+	default:
+		return "", fmt.Errorf("Unsupported Auth Type")
+	}
+}
+
 // Handler takes a handler and returns handler. If
 // *Access is null it pass thru unchanged. Otherwise
 // it applies the access policy.
