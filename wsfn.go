@@ -26,8 +26,6 @@ import (
 	"strings"
 )
 
-const Version = `v0.0.4`
-
 // IsDotPath checks to see if a path is requested with a dot file (e.g. docs/.git/* or docs/.htaccess)
 func IsDotPath(p string) bool {
 	for _, part := range strings.Split(path.Clean(p), "/") {
@@ -68,6 +66,11 @@ func StaticRouter(next http.Handler) http.Handler {
 		// we have the correct headers.
 		if ext := path.Ext(r.URL.Path); ext == ".wasm" {
 			w.Header().Set("Content-Type", "application/wasm")
+		}
+		// Check to see if we have a JS module file, then make sure
+		// we have the correct headers
+		if ext := path.Ext(r.URL.Path); (ext == ".mjs") || (ext == ".js") {
+			w.Header().Set("Content-Type", "text/javascript")
 		}
 
 		// If we make it this far, fall back to the default handler
