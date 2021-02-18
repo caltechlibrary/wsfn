@@ -4,7 +4,7 @@
 
 PROJECT = wsfn
 
-VERSION = $(shell grep -m1 "Version = " version.go | cut -d\` -f 2)
+VERSION = $(shell grep -m1 "Version = " wsfn.go | cut -d\` -f 2)
 
 BRANCH = $(shell git branch | grep "* " | cut -d\   -f 2)
 
