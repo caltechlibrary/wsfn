@@ -1,41 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title><link rel="stylesheet" href="/css/site.css">
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    {{- with .baseURL -}}<link rel="stylesheet" href="{{- . -}}/css/site.css">{{- else -}}<link rel="stylesheet" href="/css/site.css">{{- end }}
 </head>
 <body>
-<header><a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<header>
+{{- with .baseURL -}}<a href="https://library.caltech.edu"><img src="{{- . -}}/assets/liblogo.gif" alt="Caltech Library logo"></a>{{- else -}}
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>{{- end }}
 </header>
 <nav>
-<ul>
-<li><a href="/">Home</a></li>
-<li><a href="../">README</a></li>
-<li><a href="../license.html">LICENSE</a></li>
-<li><a href="../install.html">INSTALL</a></li>
-<li><a href="./">Documentation</a></li>
-<li><a href="https://github.com/caltechlibrary/wsfn">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/wsfn/releases/">Releases</a></li>
-</ul>
-
+{{ .nav }}
 </nav>
 
 <section>
-<h1>wsfn</h1>
-
-<ul>
-<li><a href="webserver-example.toml">webserver-example.toml</a> an example configuration file with comments.</li>
-</ul>
-
-<p>Generate a default &ldquo;webserver.toml&rdquo; with the following command.</p>
-
-<pre><code class="language-bash">    webserver -init &gt; webserver.toml
-</code></pre>
-
-<p>You can then edit the TOML file and use with the command&ndash;</p>
-
-<pre><code class="language-bash">    webserver webserver.toml
-</code></pre>
-
+{{ .content }}
 </section>
 
 <footer>

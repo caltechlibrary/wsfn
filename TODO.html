@@ -1,34 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title><link rel="stylesheet" href="/css/site.css">
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    {{- with .baseURL -}}<link rel="stylesheet" href="{{- . -}}/css/site.css">{{- else -}}<link rel="stylesheet" href="/css/site.css">{{- end }}
 </head>
 <body>
-<header><a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<header>
+{{- with .baseURL -}}<a href="https://library.caltech.edu"><img src="{{- . -}}/assets/liblogo.gif" alt="Caltech Library logo"></a>{{- else -}}
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>{{- end }}
 </header>
 <nav>
-<ul>
-<li><a href="/">Home</a></li>
-<li><a href="./">README</a></li>
-<li><a href="license.html">LICENSE</a></li>
-<li><a href="install.html">INSTALL</a></li>
-<li><a href="docs/">Documentation</a></li>
-<li><a href="https://github.com/caltechlibrary/wsfn">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/wsfn/releases/">Releases</a></li>
-</ul>
-
+{{ .nav }}
 </nav>
 
 <section>
-<h1>Action Items</h1>
-
-<h2>Questions</h2>
-
-<ul>
-<li>Should LoadWebService overwrite .Access always be overwritten with .AccessFile&rsquo;s contents?</li>
-<li>Should DumpWebService save .Access if .AccessFile is set?</li>
-</ul>
-
+{{ .content }}
 </section>
 
 <footer>

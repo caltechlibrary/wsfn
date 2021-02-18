@@ -1,49 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title><link rel="stylesheet" href="/css/site.css">
+    <title>Caltech Library's Digital Library Development Sandbox</title>
+    {{- with .baseURL -}}<link rel="stylesheet" href="{{- . -}}/css/site.css">{{- else -}}<link rel="stylesheet" href="/css/site.css">{{- end }}
 </head>
 <body>
-<header><a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>
+<header>
+{{- with .baseURL -}}<a href="https://library.caltech.edu"><img src="{{- . -}}/assets/liblogo.gif" alt="Caltech Library logo"></a>{{- else -}}
+<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>{{- end }}
 </header>
 <nav>
-<ul>
-<li><a href="/">Home</a></li>
-<li><a href="./">README</a></li>
-<li><a href="license.html">LICENSE</a></li>
-<li><a href="install.html">INSTALL</a></li>
-<li><a href="docs/">Documentation</a></li>
-<li><a href="https://github.com/caltechlibrary/wsfn">Github</a></li>
-<li><a href="https://github.com/caltechlibrary/wsfn/releases/">Releases</a></li>
-</ul>
-
+{{ .nav }}
 </nav>
 
 <section>
-<h1>wsfn</h1>
-
-<p><em>wsfn</em> is a package for common web functions Caltech Library uses
-in various Caltech Library tools and services. The goal
-is to standardize our handling of web interactions.</p>
-
-<ul>
-<li>wsfn.CORSPolicy is a structure for adding CORS headers to a http Handler</li>
-<li>StaticRouter is a http Handler Function for working with static routes</li>
-<li>RedirectRouter handles simple target prefix, destination prefix redirect handling
-
-<ul>
-<li>AddRedirectRoute adds a target prefix and destination prefix</li>
-<li>HasRedirectRoutes return true if any redirect routes are configured</li>
-<li>RedirectRouter uses the internal redirect data to handle redirects</li>
-</ul></li>
-<li>ReverseProxy router lets front other web services.</li>
-</ul>
-
-<p>An example <strong>webserver</strong> is also provided to demonstrate some of the
-functionality available with this package. The <strong>webserver</strong> is
-intended for instructional purposes only and shouldn&rsquo;t be used in a
-production setting.</p>
-
+{{ .content }}
 </section>
 
 <footer>
