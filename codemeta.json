@@ -6,11 +6,11 @@
     "codeRepository": "https://github.com/caltechlibrary/wsfn",
     "issueTracker": "https://github.com/caltechlibrary/wsfn/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "author": [
         {
             "@type": "Person",
-            "givenName": "Robert",
+            "givenName": "R. S.",
             "familyName": "Doiel",
             "affiliation": "Caltech Library",
             "email": "rsdoiel@caltech.edu",

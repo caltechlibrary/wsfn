@@ -81,6 +81,10 @@ func StaticRouter(next http.Handler) http.Handler {
 		if strings.HasSuffix(r.URL.Path, ".json.gz") || strings.HasSuffix(r.URL.Path, ".js.gz") {
 			w.Header().Set("Content-Encoding", "gzip")
 		}
+		// Check to see if we have a *.mjs JavaScript module.
+		if ext := path.Ext(r.URL.Path); ext == ".mjs" {
+			w.Header().Set("Content-Type", "text/javascript")
+		}
 		// Check to see if we have a *.wasm file, then make sure
 		// we have the correct headers.
 		if ext := path.Ext(r.URL.Path); ext == ".wasm" {
