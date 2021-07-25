@@ -106,10 +106,10 @@ dist/windows-amd64: $(PROGRAMS)
 	@rm -fR dist/bin
 
 
-dist/raspbian-arm7: $(PROGRAMS)
+dist/raspberry_pi_os-arm7: $(PROGRAMS)
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=arm GOARM=7 go build -o "dist/bin/$${FNAME}" cmd/$${FNAME}/*.go; done
-	@cd dist && zip -r $(PROJECT)-$(VERSION)-raspbian-arm7.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/* how-to/* demos/*
+	@cd dist && zip -r $(PROJECT)-$(VERSION)-raspberry_pi_os-arm7.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/* how-to/* demos/*
 	@rm -fR dist/bin
 
 distribute_docs:
@@ -122,7 +122,7 @@ distribute_docs:
 	@cp -vR docs dist/
 	#@cp -vR how-to dist/
 	
-release: distribute_docs dist/linux-amd64 dist/macos-amd64 dist/macos-arm64 dist/windows-amd64 dist/raspbian-arm7
+release: distribute_docs dist/linux-amd64 dist/macos-amd64 dist/macos-arm64 dist/windows-amd64 dist/raspberry_pi_os-arm7
 
 
 .FORCE:
