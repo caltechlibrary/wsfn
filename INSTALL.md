@@ -23,9 +23,9 @@ and Rapsberry Pi (ARM7 processor, raspbian-arm7).
 | Platform    | Zip Filename                            |
 |-------------|-----------------------------------------|
 | Windows     | wsfn-VERSION_NUMBER-windows-amd64.zip |
-| Mac OS X    | wsfn-VERSION_NUMBER-macosx-amd64.zip  |
+| Mac OS X    | wsfn-VERSION_NUMBER-macos-amd64.zip  |
 | Linux/Intel | wsfn-VERSION_NUMBER-linux-amd64.zip   |
-| Raspbery Pi | wsfn-VERSION_NUMBER-raspbian-arm7.zip |
+| Raspbery Pi | wsfn-VERSION_NUMBER-raspberry_pi_os-arm7.zip |
 
 
 ## The basic recipe 
@@ -49,7 +49,7 @@ downloading the zip file.
 
 ```shell
     cd Downloads/
-    unzip wsfn-*-macosx-amd64.zip
+    unzip wsfn-*-macos-amd64.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
@@ -110,7 +110,7 @@ downloading the zip file.
 
 ```shell
     cd Downloads/
-    unzip wsfn-*-raspbian-arm7.zip
+    unzip wsfn-*-raspberry_pi_os-arm7.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH

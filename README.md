@@ -1,8 +1,8 @@
-
-# wsfn
+wsfn
+====
 
 _wsfn_ is a package for common web functions Caltech Library uses 
-in various Caltech Library tools and services. The goal 
+in various Golang based Caltech Library tools and services. The goal 
 is to standardize our handling of web interactions.
 
 + wsfn.CORSPolicy is a structure for adding CORS headers to a http Handler

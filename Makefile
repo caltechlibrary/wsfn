@@ -32,6 +32,7 @@ version.go: .FORCE
 	@echo '' >>version.go
 	@echo 'const Version = "$(VERSION)"' >>version.go
 	@echo '' >>version.go
+	@git add version.go
 	@if [ -f bin/codemeta ]; then ./bin/codemeta; fi
 
 $(PROGRAMS): $(PACKAGE)
