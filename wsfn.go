@@ -131,6 +131,47 @@ func (r *RedirectService) Route(key string) (string, bool) {
 	return destination, ok
 }
 
+// LoadRedirects reads a CSV file of redirects and returns
+// a map[string]string of from/to static rediects.
+func LoadRedirects(fName string) (map[string]string, error) {
+	src, err := os.ReadFile(fName)
+	if err != nil {
+		return nil, fmt.Errorf("Can't read %s, %s", fName, err)
+	}
+	r := csv.NewReader(bytes.NewReader(src))
+	// Allow support for comment rows
+	r.Comment = '#'
+	// Make a redirect map[string]string
+	rmap := map[string]string{}
+	for {
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("Can't read %s, %s", fName, err)
+		}
+		if len(row) == 2 {
+			// Define direct here.
+			target := ""
+			destination := ""
+			if strings.HasPrefix(row[0], "/") {
+				target = row[0]
+			} else {
+				target = "/" + row[0]
+			}
+			if strings.HasPrefix(row[1], "/") {
+				destination = row[1]
+			} else {
+				destination = "/" + row[1]
+			}
+			rmap[target] = destination
+		}
+	}
+	return rmap, nil
+}
+
+
 // MakeRedirectService takes a m[string]string of redirects
 // and loads it into our service's private routes attribute.
 // It returns a new *RedirectService and error
