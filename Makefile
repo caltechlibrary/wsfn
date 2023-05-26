@@ -11,7 +11,9 @@ RELEASE_HASH=$(shell git log --pretty=format:'%h' -n 1)
 
 PROGRAMS = $(shell ls -1 cmd)
 
-MAN_PAGES = $(shell ls -1 *.1.md | sed -E 's/\.1.md/.1/g')
+MAN_PAGES_1 = $(shell ls -1 *.1.md | sed -E 's/\.1.md/.1/g')
+
+MAN_PAGES_3 = $(shell ls -1 *.3.md | sed -E 's/\.3.md/.3/g')
 
 HTML_PAGES = $(shell find . -type f | grep -E '\.html')
 
@@ -76,11 +78,20 @@ $(PROGRAMS): $(PACKAGE)
 	go build -o "bin/$@$(EXT)" cmd/$@/*.go
 	@./bin/$@ -help >$@.1.md
 
-man: $(MAN_PAGES)
+man: $(MAN_PAGES_1) $(MAN_PAGES_3)
 
-$(MAN_PAGES): .FORCE
+man/man1:
 	mkdir -p man/man1
+
+man/man3:
+	mkdir -p man/man3
+
+$(MAN_PAGES_1): man/man1 .FORCE
 	pandoc $@.md --from markdown --to man -s >man/man1/$@
+
+$(MAN_PAGES_3): man/man3 .FORCE
+	pandoc $@.md --from markdown --to man -s >man/man3/$@
+
 
 CITATION.cff: .FORCE
 	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
@@ -120,8 +131,11 @@ install: build man .FORCE
 
 uninstall: .FORCE
 	@echo "Removing programs in $(PREFIX)/bin"
-	-for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/bin/$$FNAME ]; then rm -v $(PREFIX)/bin/$$FNAME; fi; done
-	-for MAN_PAGE in $(MD_PAGES); do if [ -f $(PREFIX)/man/man1/$$MAN_PAGE.1]; then rm $(PREFIX)/man/man1/$$MAN_PAGE.1; fi
+	@for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/bin/$$FNAME ]; then rm -v $(PREFIX)/bin/$$FNAME; fi; done
+	@echo "Removing man pages from  $(PREFIX)/man/man1"
+	@for MAN_PAGE in $(MAN_PAGES_1); do if [ -f "$(PREFIX)/man/man1/$$MAN_PAGE" ]; then rm "$(PREFIX)/man/man1/$$MAN_PAGE"; fi; done
+	@echo "Removing man pages from  $(PREFIX)/man/man3"
+	@for MAN_PAGE in $(MAN_PAGES_3); do if [ -f "$(PREFIX)/man/man3/$$MAN_PAGE" ]; then rm "$(PREFIX)/man/man3/$$MAN_PAGE"; fi; done
 
 
 hash: .FORCE

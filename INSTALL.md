@@ -1,74 +1,108 @@
+Installation
+============
 
-# Installation
+**webaccess** and **webserver** are command line programs demonstrating the features of wsfn Go package. They provide a simple static file web server and access control tool (using BasicAuth). They are targetted at localhost development and not intended to be a production web server.
 
-*wsfn* is a Go package for building web services.  It includes 
-**webserver** as an example command line program run from a 
-shell like Bash. 
+Quick install with curl
+-----------------------
 
-For all the released version go to the project page on Github and 
-click latest release
+There is an experimental installer.sh script that can be run with the
+following command to install lastest table release. This may work for
+macOS, Linux and if you're using Windows with the Unix subsystem.
 
->    https://github.com/caltechlibrary/wsfn/releases/latest
+~~~
+curl https://caltechlibrary.github.io/wsfn/installer.sh | sh
+~~~
 
-You will see a list of filenames is in the form of `wsfn-VERSION_NO-PLATFORM_NAME.zip`.
+Below are generalized instructions for installation of a release.
 
-> VERSION_NUMBER is a [symantic version number](http://semver.org/) (e.g. v0.1.2)
+Compiled version
+----------------
 
-> PLATFROM_NAME is a description of a platform (e.g. windows-amd64, macosx-amd64).
+Compiled versions are available for macOS (Intel and M1 processors as macos-amd64 or macos-arm64), Linux (amd64 process, linux-amd64), Windows (amd64 and arm64 processor, windows-amd64 and windows-arm64) and Rapsberry Pi (arm7 processor, raspbian-arm7)
 
-Compiled versions are available for Mac OS X (amd64 processor, macosx-amd64), 
-Linux (amd64 processor, linux-amd64), Windows (amd64 processor, windows-amd64) 
-and Rapsberry Pi (ARM7 processor, raspbian-arm7).
+VERSION\_NUMBER is a [symantic version number](http://semver.org/) (e.g.
+`v0.0.10`)
 
-| Platform    | Zip Filename                            |
-|-------------|-----------------------------------------|
-| Windows     | wsfn-VERSION_NUMBER-windows-amd64.zip |
-| Mac OS X    | wsfn-VERSION_NUMBER-macos-amd64.zip  |
-| Linux/Intel | wsfn-VERSION_NUMBER-linux-amd64.zip   |
-| Raspbery Pi | wsfn-VERSION_NUMBER-raspberry_pi_os-arm7.zip |
+For all the released version go to the project page on Github and click latest release
 
+> <https://github.com/caltechlibrary/wsfn/releases/latest>
 
-## The basic recipe 
+| Platform    | Zip Filename                                 |
+|-------------|----------------------------------------------|
+| Windows     | wsfn-VERSION_NUMBER-Windows-x86_64.zip |
+| Windows     | wsfn-VERSION_NUMBER-Windows-arm64.zip |
+| macOS       | wsfn-VERSION_NUMBER-macOS-x86_64.zip  |
+| macOS       | wsfn-VERSION_NUMBER-macOS-arm64.zip  |
+| Linux/Intel | wsfn-VERSION_NUMBER-Linux-x86_64.zip   |
+| Linux/ARM64 | wsfn-VERSION_NUMBER-Linux-aarch64.zip   |
+| Raspberry Pi ARM 7 | wsfn-VERSION_NUMBER-RaspberryPiOS-arm7.zip |
 
-+ Download the zip file matching your platform 
-+ Unzip it 
-+ Copy the contents of the "bin" folder to a folder in your shell's path (e.g. $HOME/bin). 
-+ Adjust you PATH if needed
-+ test to see if it worked
+The basic recipe
+----------------
 
+- Find the Zip file listed matching the architecture you're running
+  and download it
+      - (e.g. if you're on a Windows 10 laptop/Surface with a Intel
+        style CPU you'd choose the Zip file with "Windows-x86_64" in the
+        name).
+- Download the zip file and unzip the file.
+- Copy the contents of the folder named "bin" to a folder that is in
+  your path
+      - (e.g. "\$HOME/bin" is common).
+- Adjust your PATH if needed
+      - (e.g. `export PATH="\$HOME/bin:\$PATH"`)
+- Test
 
-### Mac OS X
+### macOS
 
-1. Download the zip file
-2. Unzip the zip file
-3. Copy the executables to $HOME/bin (or a folder in your path)
-4. Test
+1.  Download the zip file
+2.  Unzip the zip file
+3.  Copy the executables to $HOME/bin (or a folder in your path)
+4.  Make sure the new location in in our path
+5.  Test
 
-Here's an example of the commands run in the Terminal App after 
-downloading the zip file.
+Here's an example of the commands run in the Terminal App after downloading the zip file.
 
-```shell
+#### Intel Hardware
+
+``` shell
     cd Downloads/
-    unzip wsfn-*-macos-amd64.zip
+    unzip wsfn-*-macOS-x86_64.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     webserver -version
 ```
+
+#### M1 (ARM64) Hardware
+
+``` shell
+    cd Downloads/
+    unzip wsfn-*-macOS-arm64.zip
+    mkdir -p $HOME/bin
+    cp -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    webserver -version
+```
+
 
 ### Windows
 
-1. Download the zip file
-2. Unzip the zip file
-3. Copy the executables to $HOME/bin (or a folder in your path)
-4. Test
+1.  Download the zip file
+2.  Unzip the zip file
+3.  Copy the executables to $HOME/bin (or a folder in your path)
+4.  Test
 
-Here's an example of the commands run in from the Bash shell on 
-Windows 10 after downloading the zip file.
+Here's an example of the commands run in from the Bash shell on Windows 10 after downloading the zip file.
 
-```shell
+#### Intel Hardware
+
+Most machines running Windows in 2023 are running using Intel style processors. The exceptions are some developer boxes targetting ARM CPU and some surface tablets that run on ARM processors.
+
+``` shell
     cd Downloads/
-    unzip wsfn-*-windows-amd64.zip
+    unzip wsfn-*-Windows-x86_64.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
@@ -76,41 +110,62 @@ Windows 10 after downloading the zip file.
 ```
 
 
-### Linux 
+#### ARM64 Hardware
 
-1. Download the zip file
-2. Unzip the zip file
-3. Copy the executables to $HOME/bin (or a folder in your path)
-4. Test
-
-Here's an example of the commands run in from the Bash shell after
-downloading the zip file.
-
-```shell
+``` shell
     cd Downloads/
-    unzip wsfn-*-linux-amd64.zip
+    unzip wsfn-*-Windows-arm64.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
     webserver -version
 ```
 
+Windows on ARM is relatively rare (in 2023). There are a few Windows for ARM developer boxes out and some Microsoft Surface tablets use an ARM processor.
+
+To find out what type of processor you are running on Windows you can type "systeminfo" into the command prompt or search in the taskbar for "systeminfo" then click on the System Information menu item. You're looking for an entry for "processor". It may look something like
+
+~~~
+Processor(s):              1 Processor(s) Installed.
+                           [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~1803 Mhz
+~~
+
+If you see "Intel" somewhere in the description choose the Zip file with "windos" and "amd64" in the name.
+
+
+### Linux
+
+1.  Download the zip file
+2.  Unzip the zip file
+3.  Copy the executables to $HOME/bin (or a folder in your path)
+4.  Test
+
+Here's an example of the commands run in from the Bash shell after downloading the zip file.
+
+``` shell
+    cd Downloads/
+    unzip wsfn-*-Linux-x86_64.zip
+    mkdir -p $HOME/bin
+    cp -v bin/* $HOME/bin/
+    export PATH=$HOME/bin:$PATH
+    webserver -version
+```
 
 ### Raspberry Pi
 
-Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM 7 support).
+Released version is for a Raspberry Pi 2 or later use (i.e. requires ARM
+7 support).
 
-1. Download the zip file
-2. Unzip the zip file
-3. Copy the executables to $HOME/bin (or a folder in your path)
-4. Test
+1.  Download the zip file
+2.  Unzip the zip file
+3.  Copy the executables to $HOME/bin (or a folder in your path)
+4.  Test
 
-Here's an example of the commands run in from the Bash shell after
-downloading the zip file.
+Here's an example of the commands run in from the Bash shell after downloading the zip file.
 
-```shell
+``` shell
     cd Downloads/
-    unzip wsfn-*-raspberry_pi_os-arm7.zip
+    unzip wsfn-*-raspbian-arm7.zip
     mkdir -p $HOME/bin
     cp -v bin/* $HOME/bin/
     export PATH=$HOME/bin:$PATH
@@ -118,31 +173,23 @@ downloading the zip file.
 ```
 
 
-## Compiling from source
+Compiling from source
+---------------------
 
-_wsfn_ is "go gettable".  Use the "go get" command to download the dependant packages
-as well as _wsfn_'s source code.
+*wsfn* is "go gettable". Use the "go get" command to download the dependant packages as well as *wsfn*'s source code.
 
-```shell
-    go get -u github.com/caltechlibrary/pkgassets/...
+``` shell
     go get -u github.com/caltechlibrary/wsfn/...
 ```
 
 Or clone the repstory and then compile
 
-```shell
+``` shell
     cd
-    git clone https://github.com/caltechlibrary/pkgassets src/github.com/caltechlibrary/pkgassets
-    cd src/github.com/caltechlibrary/pkgassets
-    make
-    make test
-    make install
-    cd
-    git clone https://github.com/caltechlibrary/wsfn src/github.com/caltechlibrary/wsfn
+    git clone https://github.com/caltechlibrary/wsfn \
+        src/github.com/caltechlibrary/wsfn
     cd src/github.com/caltechlibrary/wsfn
     make
     make test
     make install
 ```
-
-
