@@ -1,50 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Caltech Library's Digital Library Development Sandbox</title>
-    {{- with .baseURL -}}<link rel="stylesheet" href="{{- . -}}/css/site.css">{{- else -}}<link rel="stylesheet" href="/css/site.css">{{- end }}
+    <title>wsfn - a static web server toolkit</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
 </head>
 <body>
 <header>
-{{- with .baseURL -}}<a href="https://library.caltech.edu"><img src="{{- . -}}/assets/liblogo.gif" alt="Caltech Library logo"></a>{{- else -}}
-<a href="https://library.caltech.edu"><img src="/assets/liblogo.gif" alt="Caltech Library logo"></a>{{- end }}
+<a href="https://library.caltech.edu"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
 </header>
 <nav>
-{{ .nav }}
+<ul>
+	<li><a href="/">Home</a></li>
+	<li><a href="./">README</a></li>
+	<li><a href="user-manual.html">User Manual</a></li>
+	<li><a href="LICENSE">LICENSE</a></li>
+	<li><a href="INSTALL.html">INSTALL</a></li>
+	<li><a href="about.html">About</a></li>
+	<li><a href="https://github.com/rsdoiel/wsfn">GitHub</a></li>
+</ul>
 </nav>
 
 <section>
-{{ .content }}
+<h1 id="wsfn">wsfn</h1>
+<p><em>wsfn</em> is a package for common web functions Caltech Library
+uses in various Golang based Caltech Library tools and services. The
+goal is to standardize our handling of web interactions.</p>
+<ul>
+<li>wsfn.CORSPolicy is a structure for adding CORS headers to a http
+Handler</li>
+<li>StaticRouter is a http Handler Function for working with static
+routes</li>
+<li>RedirectRouter handles simple target prefix, destination prefix
+redirect handling
+<ul>
+<li>AddRedirectRoute adds a target prefix and destination prefix</li>
+<li>HasRedirectRoutes return true if any redirect routes are
+configured</li>
+<li>RedirectRouter uses the internal redirect data to handle
+redirects</li>
+</ul></li>
+<li>ReverseProxy router lets front other web services.</li>
+</ul>
+<p>An example <strong>webserver</strong> is also provided to demonstrate
+some of the functionality available with this package. The
+<strong>webserver</strong> is intended for instructional purposes only
+and shouldn’t be used in a production setting.</p>
 </section>
 
 <footer>
-<span><h1><A href="https://caltech.edu">Caltech</a></h1></span>
-<span>&copy; 2019 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2023 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
 <address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
 <span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
 <span><a href="mailto:library@caltech.edu">Email Us</a></span>
 <a class="cl-hide" href="sitemap.xml">Site Map</a>
 </footer>
-<!-- START: PrettyFi from https://github.com/google/code-prettify -->
-<script>
-/* We want to add the class "prettyprint" to all the pre elements */
-var pre_list = document.querySelectorAll("pre");
-
-pre_list.forEach(function(elem) {
-    elem.classList.add("prettyprint");
-    elem.classList.add("linenums");/**/
-    elem.classList.add("json"); /**/
-});
-</script>
-<style>
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9
-{
-    color: #555;
-    list-style-type: decimal;
-}
-</style>
-<link rel="stylesheet" type="text/css" href="/css/prettify.css">
-<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
-<!--  END: PrettyFi from https://github.com/google/code-prettify -->
 </body>
 </html>

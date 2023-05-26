@@ -7,7 +7,7 @@
 //
 // @author R. S. Doiel, <rsdoiel@caltech.edu>
 //
-// Copyright (c) 2019, Caltech
+// Copyright (c) 2023, Caltech
 // All rights not granted herein are expressly reserved by Caltech
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -23,8 +23,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
+	"path"
 	"sort"
 	"strings"
 
@@ -32,59 +34,97 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/wsfn"
 )
 
 // Flag options
 var (
-	description = `
+	helpText = `% {app_name}(1) {app_name} user manual | version {version} {release_hash}
+% R. S. Doiel
+% {release_date}
 
-SYNOPSIS
+# NAME
 
-	a nimble web server user access file manager
+{app_name}
 
-%s is a command line utility for setting up/managing
+# SYNOPSIS
+
+{app_name} [OPTIONS]
+
+{app_name} VERB CONFIG_FILE [PARAMETER]
+
+# DESCRIPTION
+
+A nimble user access manager for the wsfn webserver.
+
+{app_name} is a command line utility for setting up/managing
 user access to web services built on wsfn.
 
-CONFIGURATION
+# OPTIONS
 
-%s provides a command line interface for managing
+-help
+: display help
+
+-license
+: display license
+
+-version
+: display version
+
+-o
+: write output to filename
+
+
+# CONFIG_FILE
+
+{app_name} provides a command line interface for managing
 an access file. It provides the ability to 
 setup users as well as protected routes.
 
-`
+# EXAMPLES
 
-	examples = `
 Create an empty "access.toml" file.
 
-   %s init access.toml
+~~~
+{app_name} init access.toml
+~~~
 
 Add user id "Jane.Doe" to "access.toml".
 The access program prompts for a password. 
 
-   %s update access.toml Jane.Doe
+~~~
+{app_name} update access.toml Jane.Doe
+~~~
 
 Remove "Jane.Doe" from access.toml.
 
-   %s remove access.toml Jane.Doe
+~~~
+{app_name} remove access.toml Jane.Doe
+~~~
 
 List users defined in access.toml.
 
-   %s list access.toml 
+~~~
+{app_name} list access.toml 
+~~~
 
 Test a login for Jane.Doe (will prompt for password)
 
-   %s test access.toml Jane.Doe
+~~~
+{app_name} test access.toml Jane.Doe
+~~~
 
 Routes follow a similar pattern of update, list, remove.
 (note you can update or remove more than one route at a time)
 
-   %s routes update access.toml "/api/" "/private"
+~~~
+{app_name} routes update access.toml "/api/" "/private"
 
-   %s routes list access.toml
+{app_name} routes list access.toml
 
-   %s routes remove access.toml "/private/"
+{app_name} routes remove access.toml "/private/"
+~~~
+
 `
 
 	// Standard options
@@ -93,8 +133,6 @@ Routes follow a similar pattern of update, list, remove.
 	showLicense      bool
 	showExamples     bool
 	outputFName      string
-	generateMarkdown bool
-	generateManPage  bool
 	quiet            bool
 )
 
@@ -248,63 +286,54 @@ func manageRoutes(args []string) error {
 }
 
 func main() {
-	app := cli.NewCli(wsfn.Version)
-	appName := app.AppName()
-
-	// Document non-option parameters
-	app.SetParams(`VERB TOML_FILENAME [PARAMETER]`)
-
-	// Add Help Docs
-	app.AddHelp("license", []byte(fmt.Sprintf(wsfn.LicenseText, appName, wsfn.Version)))
-	app.AddHelp("description", []byte(fmt.Sprintf(description, appName, appName)))
-	app.AddHelp("examples", []byte(fmt.Sprintf(examples, appName, appName, appName, appName, appName, appName, appName, appName)))
+	appName := path.Base(os.Args[0])
+	// NOTE: the following is set when version.go is generated.
+	version := wsfn.Version
+	releaseDate := wsfn.ReleaseDate
+	releaseHash := wsfn.ReleaseHash
+	fmtHelp := wsfn.FmtHelp
 
 	// Standard Options
-	app.BoolVar(&showHelp, "h,help", false, "display help")
-	app.BoolVar(&showLicense, "l,license", false, "display license")
-	app.BoolVar(&showVersion, "v,version", false, "display version")
-	app.BoolVar(&showExamples, "example", false, "display example(s)")
-	app.BoolVar(&generateMarkdown, "generate-markdown", false, "generate markdown documentation")
-	app.BoolVar(&generateManPage, "generate-manpage", false, "generate man page")
-	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
+	flag.BoolVar(&showHelp, "help", false, "display help")
+	flag.BoolVar(&showLicense, "license", false, "display license")
+	flag.BoolVar(&showVersion, "version", false, "display version")
+	flag.BoolVar(&quiet, "quiet", false, "suppress error messages")
+	flag.StringVar(&outputFName, "o", "", "write output to filename")
 
-	app.Parse()
-	args := app.Args()
+	flag.Parse()
+	args := flag.Args()
 
 	// Setup IO
 	var err error
 
-	app.Eout = os.Stderr
-
-	app.Out, err = cli.Create(outputFName, os.Stdout)
-	cli.ExitOnError(app.Eout, err, quiet)
-	defer cli.CloseFile(outputFName, app.Out)
+	//in := os.Stdin
+	out := os.Stdout
+	eout := os.Stderr
 
 	// Process flags and update the environment as needed.
-	if generateMarkdown {
-		app.GenerateMarkdown(app.Out)
-		os.Exit(0)
-	}
-	if generateManPage {
-		app.GenerateManPage(app.Out)
-		os.Exit(0)
-	}
-	if showHelp || showExamples {
-		if len(args) > 0 {
-			fmt.Fprintln(app.Out, app.Help(args...))
-		} else {
-			app.Usage(app.Out)
-		}
+	if showHelp {
+		fmt.Fprintf(out, "%s\n", fmtHelp(helpText, appName, version, releaseDate, releaseHash))
 		os.Exit(0)
 	}
 	if showLicense {
-		fmt.Fprintln(app.Out, app.License())
+		fmt.Fprintln(out, wsfn.LicenseText)
 		os.Exit(0)
 	}
 	if showVersion {
-		fmt.Fprintln(app.Out, app.Version())
+		fmt.Fprintf(out, "%s %s %s\n", appName, version, releaseHash)
 		os.Exit(0)
 	}
+
+	if outputFName != "" && outputFName != "-" {
+		out, err = os.Create(outputFName)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			os.Exit(1)
+		}
+		defer out.Close()
+	}
+
+
 
 	verb, fName, userid := "", "", ""
 	switch len(args) {
@@ -315,16 +344,16 @@ func main() {
 	case 1:
 		verb, fName, userid = args[0], "", ""
 		if strings.Compare(verb, "routes") == 0 {
-			fmt.Fprintf(os.Stderr, "Missing action and parameters\ntry %s -h\n", appName)
+			fmt.Fprintf(eout, "Missing action and parameters\ntry %s -h\n", appName)
 			os.Exit(1)
 		}
 	case 0:
-		app.Usage(os.Stderr)
+		fmt.Fprintf(eout, "%s\n", fmtHelp(helpText, appName, version, releaseDate, releaseHash))
 		os.Exit(1)
 	default:
 		verb, fName, userid = args[0], "", ""
 		if strings.Compare(verb, "routes") != 0 {
-			fmt.Fprintf(os.Stderr, "To many parameters, try %s -help\n", appName, appName)
+			fmt.Fprintf(eout, "To many parameters, try %s -help\n", appName, appName)
 			os.Exit(1)
 		}
 	}
@@ -333,50 +362,50 @@ func main() {
 	case "init":
 		err = initAccess(fName)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(eout, "%s\n", err)
 			os.Exit(1)
 		}
 	case "update":
 		fmt.Fprintf(os.Stdout, "Enter a password:\n")
 		password, err := terminal.ReadPassword(0)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(eout, "%s\n", err)
 			os.Exit(1)
 		}
 		if err = updateAccess(fName, userid, string(password)); err != nil {
-			fmt.Fprintf(os.Stderr, "update failed, %s\n", err)
+			fmt.Fprintf(eout, "update failed, %s\n", err)
 			os.Exit(1)
 		}
 	case "remove":
 		if err = removeAccess(fName, userid); err != nil {
-			fmt.Fprintf(os.Stderr, "remove failed, %s\n", err)
+			fmt.Fprintf(eout, "remove failed, %s\n", err)
 			os.Exit(1)
 		}
 	case "list":
 		if err = listAccess(fName); err != nil {
-			fmt.Fprintf(os.Stderr, "list failed, %s\n", err)
+			fmt.Fprintf(eout, "list failed, %s\n", err)
 			os.Exit(1)
 		}
 	case "test":
 		fmt.Fprintf(os.Stdout, "Enter a password:\n")
 		password, err := terminal.ReadPassword(0)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(eout, "%s\n", err)
 			os.Exit(1)
 		}
 		if err = testAccess(fName, userid, string(password)); err != nil {
-			fmt.Fprintf(os.Stderr, "test failed, %s\n", err)
+			fmt.Fprintf(eout, "test failed, %s\n", err)
 			os.Exit(1)
 		}
 		fmt.Fprintf(os.Stdout, "OK\n")
 	case "routes":
 		if err = manageRoutes(args[1:]); err != nil {
-			fmt.Fprintf(os.Stderr, "%s %s, failed\n%s\n", appName,
+			fmt.Fprintf(eout, "%s %s, failed\n%s\n", appName,
 				strings.Join(args, " "), err)
 			os.Exit(1)
 		}
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown action %q, try %s -help\n", verb, appName)
+		fmt.Fprintf(eout, "Unknown action %q, try %s -help\n", verb, appName)
 		os.Exit(1)
 	}
 }

@@ -5,7 +5,7 @@
 //
 // @author R. S. Doiel, <rsdoiel@caltech.edu>
 //
-// Copyright (c) 2019, Caltech
+// Copyright (c) 2023, Caltech
 // All rights not granted herein are expressly reserved by Caltech
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -22,14 +22,15 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 
 	// Caltech Library packages
-	"github.com/caltechlibrary/cli"
 	"github.com/caltechlibrary/wsfn"
 
 	// 3rd Party packages
@@ -38,69 +39,115 @@ import (
 
 // Flag options
 var (
-	description = `
+	helpText = `% {app_name}(1) {app_name} user manual | version {version} {release_hash}
+% R. S. Doiel
+% {release_date}
 
-SYNOPSIS
+# NAME
 
-	a nimble web server
+{app_name}
 
-%s is a command line utility for developing and testing 
+# SYNOPSIS
+
+{app_name} [OPTIONS]
+
+{app_name} [VERB PARAMETERS || CONFIG_NAME] [DOCROOT] [URL_TO_LISTEN_ON]
+
+# DESCRIPTION
+
+A nimble web server.
+
+{app_name} is a command line utility for developing and testing 
 static websites.  It uses Go's standard http libraries 
 and can supports both http 1 and 2 out of the box.  It 
 provides a minimal set of extra features useful for 
 developing and testing web services that leverage static 
 content. 
 
-CONFIGURATION
+# OPTIONS
 
-%s is configured through a configuration file. You can
+-help
+: display help
+
+-license
+: display license
+
+-version
+: display version
+
+-o
+: write output to filename
+
+
+# CONFIG_FILE
+
+{app_name} is configured through a configuration file. You can
 create an initialization file using the "init" action.
-By default the created initialation file is "%s".
+By default the created initialation file is "{app_name}".
 
-ACTIONS
+# ACTION
 
 The following actions are available
 
-+ init     creates a %q file.
-+ start    starts up the web service
-+ htdocs   sets the document root
-+ cert_pem set the path to find cert.pem file for TLS
-+ key_pem  set the path to find the key.pem file for TLS
-+ auth     set auth type if used, e.g. Basic
-+ access   sets an external access file
+init
+: creates a {app_name}.toml file.
 
-    (The external access file is managed with
-     the "webaccess" tool.)
+start
+: starts up the web service
 
-`
+htdocs
+: sets the document root
 
-	examples = `
+cert_pem
+: set the path to find cert.pem file for TLS
+
+key_pem
+: set the path to find the key.pem file for TLS
+
+auth
+: set auth type if used, e.g. Basic
+
+access
+: sets an external access file. The external access file is managed with the "webaccess" tool.
+
+# EXAMPLES
+
 Run web server using the content in the current directory
-(assumes there is no "%s" file in the working directory).
+(assumes there is no "{app_name}" file in the working directory).
 
-   %s start
+~~~
+{app_name} start
+~~~
 
 Run web server using a specified directory
 
-   %s start /www/htdocs
+~~~
+   {app_name} start /www/htdocs
+~~~
 
-Running web server using a "/etc/%s" file for configuration.
+Running web server using a "/etc/{app_name}" file for configuration.
 
-   %s start /etc/%s
+~~~
+   {app_name} start /etc/{app_name}
+~~~
 
-Running the web server using the basic setup of "/etc/%s"
+Running the web server using the basic setup of "/etc/{app_name}"
 and overriding the default htdocs root and URL listened on
 
-   %s start /etc/%s ./htdocs http://localhost:9011
+~~~
+   {app_name} start /etc/{app_name} ./htdocs http://localhost:9011
+~~~
 
-Configure your web server with
+Configure your web server with these steps
 
-   %s init webserver.toml
-   %s htdocs webserver.toml /var/www/htdocs
-   %s url webserver.toml https://www.example.edu:443
-   %s cert_pem webserver.toml /etc/certs/cert.pem
-   %s key_pem webserver.toml /etc/certs/key.pem
-   %s access webserver.toml /etc/wsfn/access.toml
+~~~
+   {app_name} init webserver.toml
+   {app_name} htdocs webserver.toml /var/www/htdocs
+   {app_name} url webserver.toml https://www.example.edu:443
+   {app_name} cert_pem webserver.toml /etc/certs/cert.pem
+   {app_name} key_pem webserver.toml /etc/certs/key.pem
+   {app_name} access webserver.toml /etc/wsfn/access.toml
+~~~
 
 `
 
@@ -354,114 +401,102 @@ func startService(args []string) error {
 }
 
 func main() {
-	app := cli.NewCli(wsfn.Version)
-	appName := app.AppName()
-	configName := strings.TrimSuffix(strings.ToLower(appName), ".exe") + ".toml"
+	appName := path.Base(os.Args[0])
+	// NOTE: The following are set when version.go is generated
+	version := wsfn.Version
+	releaseDate := wsfn.ReleaseDate
+	releaseHash := wsfn.ReleaseHash
+	fmtHelp := wsfn.FmtHelp
 
-	// Document non-option parameters
-	app.SetParams(`[VERB PARAMETERS || CONFIG_NAME]`, `[DOCROOT]`, `[URL_TO_LISTEN_ON]`)
-
-	// Add Help Docs
-	app.AddHelp("license", []byte(fmt.Sprintf(wsfn.LicenseText, appName, wsfn.Version)))
-	app.AddHelp("description", []byte(fmt.Sprintf(description, appName, appName, configName, configName)))
-	app.AddHelp("examples", []byte(fmt.Sprintf(examples, appName, appName, appName, appName, appName, configName, configName, appName, configName, appName, appName, appName, appName, appName, appName)))
 
 	// Standard Options
-	app.BoolVar(&showHelp, "h,help", false, "display help")
-	app.BoolVar(&showLicense, "l,license", false, "display license")
-	app.BoolVar(&showVersion, "v,version", false, "display version")
-	app.BoolVar(&showExamples, "example", false, "display example(s)")
-	app.BoolVar(&generateMarkdown, "generate-markdown", false, "generate markdown documentation")
-	app.BoolVar(&generateManPage, "generate-manpage", false, "generate man page")
-	app.BoolVar(&quiet, "quiet", false, "suppress error messages")
+	flag.BoolVar(&showHelp, "help", false, "display help")
+	flag.BoolVar(&showLicense, "license", false, "display license")
+	flag.BoolVar(&showVersion, "version", false, "display version")
+	flag.BoolVar(&quiet, "quiet", false, "suppress error messages")
+	flag.StringVar(&outputFName, "o", "", "write output to filename")
 
-	app.Parse()
-	args := app.Args()
+	flag.Parse()
+	args := flag.Args()
 
 	// Setup IO
 	var err error
 
-	app.Eout = os.Stderr
+	out := os.Stdout
+	eout := os.Stderr
 
-	app.Out, err = cli.Create(outputFName, os.Stdout)
-	cli.ExitOnError(app.Eout, err, quiet)
-	defer cli.CloseFile(outputFName, app.Out)
-
+	
 	// Process flags and update the environment as needed.
-	if generateMarkdown {
-		app.GenerateMarkdown(app.Out)
-		os.Exit(0)
-	}
-	if generateManPage {
-		app.GenerateManPage(app.Out)
-		os.Exit(0)
-	}
-	if showHelp || showExamples {
-		if len(args) > 0 {
-			fmt.Fprintln(app.Out, app.Help(args...))
-		} else {
-			app.Usage(app.Out)
-		}
+	if showHelp {
+		fmt.Fprintf(out, "%s\n", fmtHelp(helpText, appName, version, releaseDate, releaseHash))
 		os.Exit(0)
 	}
 	if showLicense {
-		fmt.Fprintln(app.Out, app.License())
+		fmt.Fprintln(out, wsfn.LicenseText)
 		os.Exit(0)
 	}
 	if showVersion {
-		fmt.Fprintln(app.Out, app.Version())
+		fmt.Fprintf(out, "%s %s %s\n", appName, version, releaseHash)
 		os.Exit(0)
 	}
 
+	if outputFName != "" && outputFName != "-" {
+		out, err = os.Create(outputFName)
+		if err != nil {
+			fmt.Fprintf(eout, "%s\n", err)
+			os.Exit(1)
+		}
+		defer out.Close()
+	}
+
 	if len(args) == 0 {
-		app.Usage(os.Stderr)
-		fmt.Fprintf(os.Stderr, "Missing an action (e.g. start, init)\n")
+		fmt.Fprintf(eout, "Missing an action (e.g. start, init)\n")
 		os.Exit(1)
 	}
 	verb, args := args[0], args[1:]
 	switch verb {
 	case "init":
 		if err := initWebService(args); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(eout, "%s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
 	case "htdocs":
 		if err := setDocRootWebService(args); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(eout, "%s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
 	case "url":
 		if err := setURL(args); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(eout, "%s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
 	case "cert_pem":
 		if err := setCertPEM(args); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(eout, "%s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
 	case "key_pem":
 		if err := setKeyPEM(args); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(eout, "%s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
 	case "access":
 		if err := setAccessFile(args); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(eout, "%s\n", err)
 			os.Exit(1)
 		}
 	case "start":
 		if err := startService(args); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
+			fmt.Fprintf(eout, "%s\n", err)
 			os.Exit(1)
 		}
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown action %q\n", verb)
+		fmt.Fprintf(eout, "Unknown action %q\n", verb)
 		os.Exit(1)
 	}
 }

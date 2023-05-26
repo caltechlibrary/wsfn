@@ -3,13 +3,25 @@
 #
 PROJECT = wsfn
 
-PROGRAMS = $(shell ls -1 cmd/)
+GIT_GROUP = caltechlibrary
 
-PACKAGE = $(shell ls -1 *.go)
+RELEASE_DATE=$(shell date +'%Y-%m-%d')
+
+RELEASE_HASH=$(shell git log --pretty=format:'%h' -n 1)
+
+PROGRAMS = $(shell ls -1 cmd)
+
+MAN_PAGES = $(shell ls -1 *.1.md | sed -E 's/\.1.md/.1/g')
+
+HTML_PAGES = $(shell find . -type f | grep -E '\.html')
 
 VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
+
+PACKAGE = $(shell ls -1 *.go | grep -v 'version.go')
+
+SUBPACKAGES = $(shell ls -1 */*.go)
 
 OS = $(shell uname)
 
@@ -17,34 +29,116 @@ OS = $(shell uname)
 PREFIX = $(HOME)
 
 ifneq ($(prefix),)
-        PREFIX = $(prefix)
+	PREFIX = $(prefix)
 endif
 
-EXT = 
+EXT =
 ifeq ($(OS), Windows)
-        EXT = .exe
+	EXT = .exe
 endif
 
-build: version.go $(PROGRAMS)
+DIST_FOLDERS = bin/*
+
+build: version.go $(PROGRAMS) man CITATION.cff about.md installer.sh
 
 version.go: .FORCE
-	@echo "package $(PROJECT)" >version.go
-	@echo '' >>version.go
-	@echo 'const Version = "$(VERSION)"' >>version.go
-	@echo '' >>version.go
-	@git add version.go
-	@if [ -f bin/codemeta ]; then ./bin/codemeta; fi
+	echo '' | pandoc --from t2t --to plain \
+		--metadata-file codemeta.json \
+		--metadata package=$(PROJECT) \
+		--metadata version=$(VERSION) \
+		--metadata release_date=$(RELEASE_DATE) \
+		--metadata release_hash=$(RELEASE_HASH) \
+		--template codemeta-version-go.tmpl \
+		LICENSE >version.go
+##	@echo "package $(PROJECT)" >version.go
+##	@echo '' >>version.go
+##	@echo 'const (' >>version.go
+##	@echo  '    // Version number of release'>>version.go
+##	@echo '    Version = "$(VERSION)"' >>version.go
+##	@echo '' >>version.go
+##	@echo  '    // ReleaseDate, the date version.go was generated'>>version.go
+##	@echo '    ReleaseDate = "$(RELEASE_DATE)"' >>version.go
+##	@echo '' >>version.go
+##	@echo  '    // ReleaseHash, the Git hash when version.go was generated'>>version.go
+##	@echo '    ReleaseHash = "$(RELEASE_HASH)"' >>version.go
+##	@echo '' >>version.go
+##	@echo '    LicenseText = `' >>version.go
+##	@cat LICENSE >>version.go
+##	@echo '`' >>version.go
+##	@echo ')' >>version.go
+##	@echo '' >>version.go
+##	@git add version.go
+##	@if [ -f bin/codemeta ]; then ./bin/codemeta; fi
+
 
 $(PROGRAMS): $(PACKAGE)
 	@mkdir -p bin
 	go build -o "bin/$@$(EXT)" cmd/$@/*.go
+	@./bin/$@ -help >$@.1.md
 
-test: $(PACKAGE)
+man: $(MAN_PAGES)
+
+$(MAN_PAGES): .FORCE
+	mkdir -p man/man1
+	pandoc $@.md --from markdown --to man -s >man/man1/$@
+
+CITATION.cff: .FORCE
+	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
+	@echo '' | pandoc --metadata title="Cite $(PROJECT)" --metadata-file=_codemeta.json --template=codemeta-cff.tmpl >CITATION.cff
+
+about.md: .FORCE 
+	@cat codemeta.json | sed -E 's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
+	@echo "" | pandoc --metadata-file=_codemeta.json --template codemeta-about.tmpl >about.md 2>/dev/null;
+	@if [ -f _codemeta.json ]; then rm _codemeta.json; fi
+
+installer.sh: .FORCE
+	@echo '' | pandoc --metadata title="Installer" --metadata git_org_or_person="$(GIT_GROUP)" --metadata-file codemeta.json --template codemeta-installer.tmpl >installer.sh
+	@chmod 775 installer.sh
+	@git add -f installer.sh
+
+
+clean-website:
+	make -f website.mak clean
+
+website: clean-website .FORCE
+	make -f website.mak
+
+
+# NOTE: on macOS you must use "mv" instead of "cp" to avoid problems
+install: build man .FORCE
+	@if [ ! -d $(PREFIX)/bin ]; then mkdir -p $(PREFIX)/bin; fi
+	@echo "Installing programs in $(PREFIX)/bin"
+	@for FNAME in $(PROGRAMS); do if [ -f ./bin/$$FNAME ]; then mv -v ./bin/$$FNAME $(PREFIX)/bin/$$FNAME; fi; done
+	@echo ""
+	@echo "Make sure $(PREFIX)/bin is in your PATH"
+	@echo ""
+	@if [ ! -d $(PREFIX)/man/man1 ]; then mkdir -p $(PREFIX)/man/man1; fi
+	@for MAN_PAGE in $(MAN_PAGES); do cp -v man/man1/$$MAN_PAGE $(PREFIX)/man/man1/;done
+	@echo ""
+	@echo "Make sure $(PREFIX)/man is in your MANPATH"
+	@echo ""
+
+uninstall: .FORCE
+	@echo "Removing programs in $(PREFIX)/bin"
+	-for FNAME in $(PROGRAMS); do if [ -f $(PREFIX)/bin/$$FNAME ]; then rm -v $(PREFIX)/bin/$$FNAME; fi; done
+	-for MAN_PAGE in $(MD_PAGES); do if [ -f $(PREFIX)/man/man1/$$MAN_PAGE.1]; then rm $(PREFIX)/man/man1/$$MAN_PAGE.1; fi
+
+
+hash: .FORCE
+	git log --pretty=format:'%h' -n 1
+
+check: .FORCE
+	for FNAME in $(shell ls -1 *.go); do go fmt $$FNAME; done
+	go vet *.go
+
+test: clean build
 	go test
 
-website:
-	bash gen-nav.bash
-	bash mk-website.bash
+clean: 
+	-if [ -d bin ]; then rm -fR bin; fi
+	-if [ -d dist ]; then rm -fR dist; fi
+	-if [ -d testout ]; then rm -fR testout; fi
+	-for MAN_PAGE in $(MAN_PAGES); do if [ -f man/man1/$$MAN_PAGE.1 ]; then rm man/man1/$$MAN_PAGE.1; fi;done
 
 status:
 	git status
@@ -57,60 +151,52 @@ refresh:
 	git fetch origin
 	git pull origin $(BRANCH)
 
-publish:
-	bash gen-nav.bash
-	bash mk-website.bash
-	bash publish.bash
-
-clean: 
-	@if [ -f version.go ]; then rm version.go; fi
-	@if [ -d bin ]; then rm -fR bin; fi
-	@if [ -d dist ]; then rm -fR dist; fi
-	@if [ -d man ]; then rm -fR man; fi
-
-install: build
-	@echo "Installing programs in $(PREFIX)/bin"
-	@for FNAME in $(PROGRAMS); do if [ -f "./bin/$${FNAME}$(EXT)" ]; then cp -v "./bin/$${FNAME}$(EXT)" "$(PREFIX)/bin/$${FNAME}$(EXT)"; fi; done
-	@echo ""
-	@echo "Make sure $(PREFIX)/bin is in your PATH"
-
-uninstall: .FORCE
-	@echo "Removing programs in $(PREFIX)/bin"
-	@for FNAME in $(PROGRAMS); do if [ -f "$(PREFIX)/bin/$${FNAME}$(EXT)" ]; then rm -v "$(PREFIX)/bin/$${FNAME}$(EXT)"; fi; done
+publish: build website save .FORCE
+	./publish.bash
 
 
-dist/linux-amd64: $(PROGRAMS)
+dist/Linux-x86_64: $(PROGRAMS)
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env  GOOS=linux GOARCH=amd64 go build -o "dist/bin/$${FNAME}" cmd/$${FNAME}/*.go; done
-	@cd dist && zip -r $(PROJECT)-$(VERSION)-linux-amd64.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/*
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-x86_64.zip LICENSE codemeta.json CITATION.cff *.md bin/* $(DOCS)
 	@rm -fR dist/bin
 
+dist/Linux-aarch64: $(PROGRAMS)
+	@mkdir -p dist/bin
+	@for FNAME in $(PROGRAMS); do env  GOOS=linux GOARCH=arm64 go build -o "dist/bin/$${FNAME}" cmd/$${FNAME}/*.go; done
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-aarch64.zip LICENSE codemeta.json CITATION.cff *.md bin/* $(DOCS)
+	@rm -fR dist/bin
 
-dist/macos-amd64: $(PROGRAMS)
+dist/macOS-x86_64: $(PROGRAMS)
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env GOOS=darwin GOARCH=amd64 go build -o "dist/bin/$${FNAME}" cmd/$${FNAME}/*.go; done
-	@cd dist && zip -r $(PROJECT)-$(VERSION)-macos-amd64.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/*
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-macOS-x86_64.zip LICENSE codemeta.json CITATION.cff *.md bin/* $(DOCS)
 	@rm -fR dist/bin
-	
 
-dist/macos-arm64: $(PROGRAMS)
+
+dist/macOS-arm64: $(PROGRAMS)
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env GOOS=darwin GOARCH=arm64 go build -o "dist/bin/$${FNAME}" cmd/$${FNAME}/*.go; done
-	@cd dist && zip -r $(PROJECT)-$(VERSION)-macos-arm64.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/*
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-macOS-arm64.zip LICENSE codemeta.json CITATION.cff *.md bin/* $(DOCS)
 	@rm -fR dist/bin
-	
 
-dist/windows-amd64: $(PROGRAMS)
+
+dist/Windows-x86_64: $(PROGRAMS)
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env GOOS=windows GOARCH=amd64 go build -o "dist/bin/$${FNAME}.exe" cmd/$${FNAME}/*.go; done
-	@cd dist && zip -r $(PROJECT)-$(VERSION)-windows-amd64.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/*
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Windows-x86_64.zip LICENSE codemeta.json CITATION.cff *.md bin/* $(DOCS)
 	@rm -fR dist/bin
 
+dist/Windows-arm64: $(PROGRAMS)
+	@mkdir -p dist/bin
+	@for FNAME in $(PROGRAMS); do env GOOS=windows GOARCH=arm64 go build -o "dist/bin/$${FNAME}.exe" cmd/$${FNAME}/*.go; done
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Windows-arm64.zip LICENSE codemeta.json CITATION.cff *.md bin/* $(DOCS)
+	@rm -fR dist/bin
 
-dist/raspberry_pi_os-arm7: $(PROGRAMS)
+dist/RaspberryPiOS-arm7: $(PROGRAMS)
 	@mkdir -p dist/bin
 	@for FNAME in $(PROGRAMS); do env GOOS=linux GOARCH=arm GOARM=7 go build -o "dist/bin/$${FNAME}" cmd/$${FNAME}/*.go; done
-	@cd dist && zip -r $(PROJECT)-$(VERSION)-raspberry_pi_os-arm7.zip LICENSE codemeta.json CITATION.cff *.md bin/* docs/*
+	@cd dist && zip -r $(PROJECT)-v$(VERSION)-RaspberryPiOS-arm7.zip LICENSE codemeta.json CITATION.cff *.md bin/* $(DOCS)
 	@rm -fR dist/bin
 
 distribute_docs:
@@ -120,9 +206,9 @@ distribute_docs:
 	@cp -v README.md dist/
 	@cp -v LICENSE dist/
 	@cp -v INSTALL.md dist/
-	@cp -vR docs dist/
-	
-release: build distribute_docs dist/linux-amd64 dist/macos-amd64 dist/macos-arm64 dist/windows-amd64 dist/raspberry_pi_os-arm7
+	@cp -vR man dist/
+	@for DNAME in $(DOCS); do cp -vR $$DNAME dist/; done
 
+release: save build save distribute_docs dist/Linux-x86_64 dist/Linux-aarch64 dist/macOS-x86_64 dist/macOS-arm64 dist/Windows-x86_64 dist/Windows-arm64 dist/RaspberryPiOS-arm7
 
 .FORCE:

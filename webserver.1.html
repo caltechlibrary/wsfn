@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>wsfn - a static web server toolkit</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+	<li><a href="/">Home</a></li>
+	<li><a href="./">README</a></li>
+	<li><a href="user-manual.html">User Manual</a></li>
+	<li><a href="LICENSE">LICENSE</a></li>
+	<li><a href="INSTALL.html">INSTALL</a></li>
+	<li><a href="about.html">About</a></li>
+	<li><a href="https://github.com/rsdoiel/wsfn">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="name">NAME</h1>
+<p>webserver</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>webserver <a href="#options">OPTIONS</a></p>
+<p>webserver [VERB PARAMETERS || CONFIG_NAME] [DOCROOT]
+[URL_TO_LISTEN_ON]</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>A nimble web server.</p>
+<p>webserver is a command line utility for developing and testing static
+websites. It uses Go’s standard http libraries and can supports both
+http 1 and 2 out of the box. It provides a minimal set of extra features
+useful for developing and testing web services that leverage static
+content.</p>
+<h1 id="options">OPTIONS</h1>
+<dl>
+<dt>-help</dt>
+<dd>
+display help
+</dd>
+<dt>-license</dt>
+<dd>
+display license
+</dd>
+<dt>-version</dt>
+<dd>
+display version
+</dd>
+<dt>-o</dt>
+<dd>
+write output to filename
+</dd>
+</dl>
+<h1 id="config_file">CONFIG_FILE</h1>
+<p>webserver is configured through a configuration file. You can create
+an initialization file using the “init” action. By default the created
+initialation file is “webserver”.</p>
+<h1 id="action">ACTION</h1>
+<p>The following actions are available</p>
+<dl>
+<dt>init</dt>
+<dd>
+creates a webserver.toml file.
+</dd>
+<dt>start</dt>
+<dd>
+starts up the web service
+</dd>
+<dt>htdocs</dt>
+<dd>
+sets the document root
+</dd>
+<dt>cert_pem</dt>
+<dd>
+set the path to find cert.pem file for TLS
+</dd>
+<dt>key_pem</dt>
+<dd>
+set the path to find the key.pem file for TLS
+</dd>
+<dt>auth</dt>
+<dd>
+set auth type if used, e.g. Basic
+</dd>
+<dt>access</dt>
+<dd>
+sets an external access file. The external access file is managed with
+the “webaccess” tool.
+</dd>
+</dl>
+<h1 id="examples">EXAMPLES</h1>
+<p>Run web server using the content in the current directory (assumes
+there is no “webserver” file in the working directory).</p>
+<pre><code>webserver start</code></pre>
+<p>Run web server using a specified directory</p>
+<pre><code>   webserver start /www/htdocs</code></pre>
+<p>Running web server using a “/etc/webserver” file for
+configuration.</p>
+<pre><code>   webserver start /etc/webserver</code></pre>
+<p>Running the web server using the basic setup of “/etc/webserver” and
+overriding the default htdocs root and URL listened on</p>
+<pre><code>   webserver start /etc/webserver ./htdocs http://localhost:9011</code></pre>
+<p>Configure your web server with these steps</p>
+<pre><code>   webserver init webserver.toml
+   webserver htdocs webserver.toml /var/www/htdocs
+   webserver url webserver.toml https://www.example.edu:443
+   webserver cert_pem webserver.toml /etc/certs/cert.pem
+   webserver key_pem webserver.toml /etc/certs/key.pem
+   webserver access webserver.toml /etc/wsfn/access.toml</code></pre>
+</section>
+
+<footer>
+<span><h1><A href="http://caltech.edu">Caltech</a></h1></span>
+<span>&copy; 2023 <a href="https://www.library.caltech.edu/copyright">Caltech library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address> 
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<a class="cl-hide" href="sitemap.xml">Site Map</a>
+</footer>
+</body>
+</html>
