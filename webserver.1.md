@@ -1,4 +1,4 @@
-% webserver(1) webserver user manual | version 0.0.10 bf9252d
+% webserver(1) webserver user manual | version 0.0.10 307a992
 % R. S. Doiel
 % 2023-05-26
 
