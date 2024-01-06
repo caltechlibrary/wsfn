@@ -6,7 +6,8 @@
     "codeRepository": "https://github.com/caltechlibrary/wsfn",
     "issueTracker": "https://github.com/caltechlibrary/wsfn/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "0.0.10",
+    "version": "0.0.11",
+	"dateUpdated": "2024-01-05",
     "author": [
         {
             "@type": "Person",
