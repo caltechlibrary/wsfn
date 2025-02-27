@@ -90,7 +90,7 @@ By default the created initialation file is "{app_name}".
 The following actions are available
 
 init
-: creates a {app_name}.toml file.
+: creates a "webservice.toml" file. This is used by {app_name} for configuration.
 
 start
 : starts up the web service
