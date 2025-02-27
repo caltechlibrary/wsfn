@@ -1,4 +1,4 @@
-% webserver(1) webserver user manual | version 0.0.12 aee0451
+% webserver(1) webserver user manual | version 0.0.12 5097e22
 % R. S. Doiel
 % 2025-02-27
 
@@ -49,7 +49,7 @@ By default the created initialation file is "webserver".
 The following actions are available
 
 init
-: creates a webserver.toml file.
+: creates a "webservice.toml" file. This is used by webserver for configuration.
 
 start
 : starts up the web service
