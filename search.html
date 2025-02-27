@@ -15,18 +15,26 @@
 	<li><a href="user-manual.html">User Manual</a></li>
 	<li><a href="LICENSE">LICENSE</a></li>
 	<li><a href="INSTALL.html">INSTALL</a></li>
+	<li><a href="search.html">Search</a></li>
 	<li><a href="about.html">About</a></li>
 	<li><a href="https://github.com/rsdoiel/wsfn">GitHub</a></li>
 </ul>
 </nav>
 
 <section>
-<h1 id="wsfn-user-manual">wsfn user manual</h1>
-<ul>
-<li><a href="webaccess.1.html">webaccess</a></li>
-<li><a href="webserver.1.html">webserver</a></li>
-<li><a href="webserver.3.html">configuration</a></li>
-</ul>
+<h1 id="project-search">Project Search</h1>
+<p><link href="./pagefind/pagefind-ui.css" rel="stylesheet"></p>
+<script src="./pagefind/pagefind-ui.js" type="text/javascript"></script>
+<div id="search">
+
+</div>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        new PagefindUI({ 
+            element: "#search"
+        });
+    });
+</script>
 </section>
 
 <footer>

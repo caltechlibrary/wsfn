@@ -1,6 +1,6 @@
-% webserver(1) webserver user manual | version 0.0.10 7011826
+% webserver(1) webserver user manual | version 0.0.12 9b1d106
 % R. S. Doiel
-% 2024-01-05
+% 2025-02-27
 
 # NAME
 

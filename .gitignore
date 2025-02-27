@@ -37,3 +37,6 @@ access.toml
 workflows.toml
 users.toml
 htdocs/*
+nav.*
+*.bak
+*-save

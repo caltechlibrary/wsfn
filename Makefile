@@ -41,37 +41,10 @@ endif
 
 DIST_FOLDERS = bin/*
 
-build: version.go $(PROGRAMS) man CITATION.cff about.md installer.sh
+build: version.go $(PROGRAMS) man CITATION.cff about.md installer.sh installer.ps1
 
 version.go: .FORCE
-	echo '' | pandoc --from t2t --to plain \
-		--metadata-file codemeta.json \
-		--metadata package=$(PROJECT) \
-		--metadata version=$(VERSION) \
-		--metadata release_date=$(RELEASE_DATE) \
-		--metadata release_hash=$(RELEASE_HASH) \
-		--template codemeta-version-go.tmpl \
-		LICENSE >version.go
-##	@echo "package $(PROJECT)" >version.go
-##	@echo '' >>version.go
-##	@echo 'const (' >>version.go
-##	@echo  '    // Version number of release'>>version.go
-##	@echo '    Version = "$(VERSION)"' >>version.go
-##	@echo '' >>version.go
-##	@echo  '    // ReleaseDate, the date version.go was generated'>>version.go
-##	@echo '    ReleaseDate = "$(RELEASE_DATE)"' >>version.go
-##	@echo '' >>version.go
-##	@echo  '    // ReleaseHash, the Git hash when version.go was generated'>>version.go
-##	@echo '    ReleaseHash = "$(RELEASE_HASH)"' >>version.go
-##	@echo '' >>version.go
-##	@echo '    LicenseText = `' >>version.go
-##	@cat LICENSE >>version.go
-##	@echo '`' >>version.go
-##	@echo ')' >>version.go
-##	@echo '' >>version.go
-##	@git add version.go
-##	@if [ -f bin/codemeta ]; then ./bin/codemeta; fi
-
+	cmt codemeta.json version.go	
 
 $(PROGRAMS): $(PACKAGE)
 	@mkdir -p bin
@@ -92,21 +65,21 @@ $(MAN_PAGES_1): man/man1 .FORCE
 $(MAN_PAGES_3): man/man3 .FORCE
 	pandoc $@.md --from markdown --to man -s >man/man3/$@
 
-
 CITATION.cff: .FORCE
-	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
-	@echo '' | pandoc --metadata title="Cite $(PROJECT)" --metadata-file=_codemeta.json --template=codemeta-cff.tmpl >CITATION.cff
+	cmt codemeta.json CITATION.cff
 
 about.md: .FORCE 
-	@cat codemeta.json | sed -E 's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
-	@echo "" | pandoc --metadata-file=_codemeta.json --template codemeta-about.tmpl >about.md 2>/dev/null;
-	@if [ -f _codemeta.json ]; then rm _codemeta.json; fi
+	cmt codemeta.json about.md
 
 installer.sh: .FORCE
-	@echo '' | pandoc --metadata title="Installer" --metadata git_org_or_person="$(GIT_GROUP)" --metadata-file codemeta.json --template codemeta-installer.tmpl >installer.sh
+	@cmt codemeta.json installer.sh
 	@chmod 775 installer.sh
 	@git add -f installer.sh
 
+installer.ps1: .FORCE
+	@cmt codemeta.json installer.ps1
+	@chmod 775 installer.ps1
+	@git add -f installer.ps1
 
 clean-website:
 	make -f website.mak clean
