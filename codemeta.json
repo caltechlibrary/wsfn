@@ -18,27 +18,31 @@
       "name": "https://orcid.org/0000-0003-0900-6903"
     }
   ],
-  "dateModified": "2025-02-27",
-  "datePublished": "2025-02-27",
+  "dateModified": "2025-04-14",
+  "datePublished": "2025-04-14",
   "description": "A golang package providing simple static http services.",
   "keywords": [
     "go",
     "web service"
   ],
   "name": "wsfn",
-  "license": "https://data.caltech.edu/license",
+  "license": "https://caltechlibrary.github.io/wsfn/LICENSE",
   "programmingLanguage": [
     "Go"
   ],
   "softwareRequirements": [
-    "Go >= 1.24.0",
-    "GNU Make",
+    "Go >= 1.24.2",
+    "GNU Make > 3",
     "Pandoc >= 3.1",
-    "CMTools >= 0.0.18"
+    "CMTools >= 0.0.23"
   ],
-  "version": "0.0.12",
+  "version": "0.0.13",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/wsfn/issues",
   "downloadUrl": "https://github.com/caltechlibrary/wsfn/releases",
-  "releaseNotes": "This is a maintenance release compiled with Go version 1.24.0"
+  "releaseNotes": "This is a maintenance release compiled with Go version 1.24.2 and updated dependencies.",
+  "copyrightYear": 2025,
+  "copyrightHolder": [
+    "California Institute of Technology"
+  ]
 }
