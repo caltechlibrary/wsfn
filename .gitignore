@@ -27,6 +27,7 @@ _testmain.go
 testout/*
 *~
 *.swp
+*.tmp
 .DS_Store
 bin/*
 dist/*
