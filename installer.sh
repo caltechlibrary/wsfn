@@ -4,7 +4,7 @@
 # Set the package name and version to install
 #
 PACKAGE="wsfn"
-VERSION="0.0.12"
+VERSION="0.0.13"
 GIT_GROUP="caltechlibrary"
 RELEASE="https://github.com/$$GIT_GROUP/$$PACKAGE/releases/tag/v$$VERSION"
 if [ "$$PKG_VERSION" != "" ]; then
