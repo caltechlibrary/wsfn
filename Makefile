@@ -196,5 +196,6 @@ distribute_docs:
 	@cp -vR man dist/
 
 release: save build save distribute_docs dist/Linux-x86_64 dist/Linux-aarch64 dist/macOS-x86_64 dist/macOS-arm64 dist/Windows-x86_64 dist/Windows-arm64 dist/RaspberryPiOS-arm7
+	echo "Ready to do ./release.bash"
 
 .FORCE:
