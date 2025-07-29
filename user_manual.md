@@ -1,7 +1,6 @@
 
 # User Manual
 
-- [Readme First](README.md)
 - [Installation](INSTALL.md)
 - Manual Pages
   - [webaccess](webaccess.1.md)
