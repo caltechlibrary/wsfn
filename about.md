@@ -58,10 +58,10 @@ A golang package providing simple static http services.
 
 ### Software Requirements
 
-- Go &gt;&#x3D; 1.24.2
-- GNU Make &gt; 3
-- Pandoc &gt;&#x3D; 3.1
-- CMTools &gt;&#x3D; 0.0.23
+- Go >= 1.24.2
+- GNU Make > 3
+- Pandoc >= 3.1
+- CMTools >= 0.0.23
 
 
 
