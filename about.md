@@ -11,7 +11,7 @@ maintainer:
   - name: https://orcid.org/0000-0003-0900-6903
 
 repository_code: https://github.com/caltechlibrary/wsfn
-version: 0.0.13
+version: 0.0.14
 license_url: https://caltechlibrary.github.io/wsfn/LICENSE
 
 programming_language:
@@ -21,15 +21,15 @@ keywords:
   - go
   - web service
 
-date_released: 2025-04-14
+date_released: 2026-01-05
 ---
 
 About this software
 ===================
 
-## wsfn 0.0.13
+## wsfn 0.0.14
 
-This is a maintenance release compiled with Go version 1.24.2 and updated dependencies.
+This is a maintenance release compiled with Go version 1.25.5 and updated dependencies.
 
 ### Authors
 

@@ -18,8 +18,8 @@
       "name": "https://orcid.org/0000-0003-0900-6903"
     }
   ],
-  "dateModified": "2025-04-14",
-  "datePublished": "2025-04-14",
+  "dateModified": "2026-01-05",
+  "datePublished": "2026-01-05",
   "description": "A golang package providing simple static http services.",
   "keywords": [
     "go",
@@ -36,11 +36,11 @@
     "Pandoc >= 3.1",
     "CMTools >= 0.0.23"
   ],
-  "version": "0.0.13",
-  "developmentStatus": "active",
+  "version": "0.0.14",
+  "developmentStatus": "inactive",
   "issueTracker": "https://github.com/caltechlibrary/wsfn/issues",
   "downloadUrl": "https://github.com/caltechlibrary/wsfn/releases",
-  "releaseNotes": "This is a maintenance release compiled with Go version 1.24.2 and updated dependencies.",
+  "releaseNotes": "This is a maintenance release compiled with Go version 1.25.5 and updated dependencies.",
   "copyrightYear": 2025,
   "copyrightHolder": [
     "California Institute of Technology"

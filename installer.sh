@@ -1,11 +1,11 @@
 #!/bin/sh
-# generated with CMTools 0.0.13 2fcb4ef
+# generated with CMTools 0.0.14 0b9ce83
 
 #
 # Set the package name and version to install
 #
 PACKAGE="wsfn"
-VERSION="0.0.13"
+VERSION="0.0.14"
 GIT_GROUP="caltechlibrary"
 RELEASE="https://github.com/$GIT_GROUP/$PACKAGE/releases/tag/v$VERSION"
 if [ "$PKG_VERSION" != "" ]; then

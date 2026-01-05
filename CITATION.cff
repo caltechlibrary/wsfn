@@ -15,8 +15,8 @@ contacts:
     given-names: 
 
 repository-code: "https://github.com/caltechlibrary/wsfn"
-version: 0.0.13
-date-released: 2025-04-14
+version: 0.0.14
+date-released: 2026-01-05
 
 license-url: "https://caltechlibrary.github.io/wsfn/LICENSE"
 keywords:
