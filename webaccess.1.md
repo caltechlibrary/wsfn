@@ -1,4 +1,4 @@
-% webaccess(1) webaccess user manual | version 0.0.14 0b9ce83
+% webaccess(1) webaccess user manual | version 0.0.14 61b5371
 % R. S. Doiel
 % 2026-01-05
 
