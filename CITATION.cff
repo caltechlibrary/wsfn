@@ -3,7 +3,8 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
 title: wsfn
-abstract: "A golang package providing simple static http services."
+abstract: |-
+  A golang package providing simple static http services.
 authors:
   - family-names: Doiel
     given-names: R. S.

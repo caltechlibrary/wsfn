@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -39,124 +40,11 @@ import (
 
 // Flag options
 var (
-	helpText = `% {app_name}(1) {app_name} user manual | version {version} {release_hash}
-% R. S. Doiel
-% {release_date}
-
-# NAME
-
-{app_name}
-
-# SYNOPSIS
-
-{app_name} [OPTIONS]
-
-{app_name} [VERB PARAMETERS || CONFIG_NAME] [DOCROOT] [URL_TO_LISTEN_ON]
-
-# DESCRIPTION
-
-A nimble web server.
-
-{app_name} is a command line utility for developing and testing 
-static websites.  It uses Go's standard http libraries 
-and can supports both http 1 and 2 out of the box.  It 
-provides a minimal set of extra features useful for 
-developing and testing web services that leverage static 
-content. 
-
-# OPTIONS
-
--help
-: display help
-
--license
-: display license
-
--version
-: display version
-
--o
-: write output to filename
-
-
-# CONFIG_FILE
-
-{app_name} is configured through a configuration file. You can
-create an initialization file using the "init" action.
-By default the created initialation file is "{app_name}".
-
-# ACTION
-
-The following actions are available
-
-init
-: creates a "webservice.toml" file. This is used by {app_name} for configuration.
-
-start
-: starts up the web service
-
-htdocs
-: sets the document root
-
-cert_pem
-: set the path to find cert.pem file for TLS
-
-key_pem
-: set the path to find the key.pem file for TLS
-
-auth
-: set auth type if used, e.g. Basic
-
-access
-: sets an external access file. The external access file is managed with the "webaccess" tool.
-
-# EXAMPLES
-
-Run web server using the content in the current directory
-(assumes there is no "{app_name}" file in the working directory).
-
-~~~
-{app_name} start
-~~~
-
-Run web server using a specified directory
-
-~~~
-   {app_name} start /www/htdocs
-~~~
-
-Running web server using a "/etc/{app_name}" file for configuration.
-
-~~~
-   {app_name} start /etc/{app_name}
-~~~
-
-Running the web server using the basic setup of "/etc/{app_name}"
-and overriding the default htdocs root and URL listened on
-
-~~~
-   {app_name} start /etc/{app_name} ./htdocs http://localhost:9011
-~~~
-
-Configure your web server with these steps
-
-~~~
-   {app_name} init webserver.toml
-   {app_name} htdocs webserver.toml /var/www/htdocs
-   {app_name} url webserver.toml https://www.example.edu:443
-   {app_name} cert_pem webserver.toml /etc/certs/cert.pem
-   {app_name} key_pem webserver.toml /etc/certs/key.pem
-   {app_name} access webserver.toml /etc/wsfn/access.toml
-~~~
-
-`
-
 	// Standard options
-	showHelp         bool
-	showVersion      bool
-	showLicense      bool
-	showExamples     bool
-	outputFName      string
+	showHelp    bool
+	showVersion bool
+	showLicense bool
+	outputFName string
 	generateMarkdown bool
 	generateManPage  bool
 	quiet            bool
@@ -400,14 +288,69 @@ func startService(args []string) error {
 	return nil
 }
 
+// showHelpTopic displays help for a specific topic or the main help
+func showHelpTopic(w io.Writer, topic, appName, version, releaseDate, releaseHash string) {
+	var helpText string
+	
+	switch topic {
+	case "", "help":
+		helpText = wsfn.WebserverMainHelp
+	case "config-file", "configuration":
+		helpText = wsfn.WebserverConfigFileTopicHelp
+	case "reverse-proxy":
+		helpText = wsfn.WebserverReverseProxyTopicHelp
+	case "static-website":
+		helpText = wsfn.WebserverStaticWebsiteTopicHelp
+	case "static-with-api":
+		helpText = wsfn.WebserverStaticWithApiTopicHelp
+	case "tls":
+		helpText = wsfn.WebserverTlsTopicHelp
+	case "auth", "authentication":
+		helpText = wsfn.WebserverAuthTopicHelp
+	case "cors":
+		helpText = wsfn.WebserverCorsTopicHelp
+	case "redirects":
+		helpText = wsfn.WebserverRedirectsTopicHelp
+	default:
+		// Unknown topic - show main help with error message
+		fmt.Fprintf(w, "Unknown help topic: %s\n\n", topic)
+		fmt.Fprintf(w, "%s\n", wsfn.FmtHelp(wsfn.WebserverMainHelp, appName, version, releaseDate, releaseHash))
+		return
+	}
+	
+	fmt.Fprintf(w, "%s\n", wsfn.FmtHelp(helpText, appName, version, releaseDate, releaseHash))
+}
+
 func main() {
 	appName := path.Base(os.Args[0])
 	// NOTE: The following are set when version.go is generated
 	version := wsfn.Version
 	releaseDate := wsfn.ReleaseDate
 	releaseHash := wsfn.ReleaseHash
-	fmtHelp := wsfn.FmtHelp
 
+	// Handle -help TOPIC before flag parsing
+	// We need to check os.Args directly to support -help topic syntax
+	helpTopic := ""
+	if len(os.Args) > 1 {
+		for i := 1; i < len(os.Args); i++ {
+			if os.Args[i] == "-help" && i+1 < len(os.Args) {
+				// Check if next arg is not a flag (doesn't start with -)
+				if len(os.Args[i+1]) > 0 && os.Args[i+1][0] != '-' {
+					helpTopic = os.Args[i+1]
+					// Display help for topic and exit immediately
+					showHelpTopic(os.Stdout, helpTopic, appName, version, releaseDate, releaseHash)
+					os.Exit(0)
+				} else {
+					// Just -help, remove it so flag doesn't see it
+					newArgs := make([]string, 0, len(os.Args)-1)
+					newArgs = append(newArgs, os.Args[:i]...)
+					newArgs = append(newArgs, os.Args[i+1:]...)
+					os.Args = newArgs
+					break
+				}
+			}
+		}
+	}
 
 	// Standard Options
 	flag.BoolVar(&showHelp, "help", false, "display help")
@@ -428,11 +371,11 @@ func main() {
 	
 	// Process flags and update the environment as needed.
 	if showHelp {
-		fmt.Fprintf(out, "%s\n", fmtHelp(helpText, appName, version, releaseDate, releaseHash))
+		showHelpTopic(out, helpTopic, appName, version, releaseDate, releaseHash)
 		os.Exit(0)
 	}
 	if showLicense {
-		fmt.Fprintln(out, wsfn.LicenseText)
+		fmt.Fprint(out, wsfn.LicenseText)
 		os.Exit(0)
 	}
 	if showVersion {
@@ -455,6 +398,13 @@ func main() {
 	}
 	verb, args := args[0], args[1:]
 	switch verb {
+	case "help":
+		if len(args) > 0 {
+			showHelpTopic(out, args[0], appName, version, releaseDate, releaseHash)
+		} else {
+			showHelpTopic(out, "", appName, version, releaseDate, releaseHash)
+		}
+		os.Exit(0)
 	case "init":
 		if err := initWebService(args); err != nil {
 			fmt.Fprintf(eout, "%s\n", err)

@@ -31,16 +31,18 @@
     "Go"
   ],
   "softwareRequirements": [
-    "Go >= 1.24.2",
-    "GNU Make > 3",
-    "Pandoc >= 3.1",
-    "CMTools >= 0.0.23"
+    "Go >= 1.26.4"
   ],
-  "version": "0.0.14",
+  "softwareSuggestions": [
+    "GNU Make > 3.8",
+    "Pandoc >= 3.9",
+    "CMTools >= 0.0.45b"
+  ],
+  "version": "0.1.0",
   "developmentStatus": "inactive",
   "issueTracker": "https://github.com/caltechlibrary/wsfn/issues",
   "downloadUrl": "https://github.com/caltechlibrary/wsfn/releases",
-  "releaseNotes": "This is a maintenance release compiled with Go version 1.25.5 and updated dependencies.",
+  "releaseNotes": "- Added reverse proxy support.\n- Upgraded Go to v1.26.4",
   "copyrightYear": 2025,
   "copyrightHolder": [
     "California Institute of Technology"

@@ -1,4 +1,4 @@
-% webserver(1) webserver user manual | version 0.0.14 61b5371
+% webserver(1) webserver user manual | version 0.0.14 89e9b3f
 % R. S. Doiel
 % 2026-01-05
 

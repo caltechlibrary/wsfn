@@ -25,6 +25,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"sort"
@@ -39,101 +40,12 @@ import (
 
 // Flag options
 var (
-	helpText = `% {app_name}(1) {app_name} user manual | version {version} {release_hash}
-% R. S. Doiel
-% {release_date}
-
-# NAME
-
-{app_name}
-
-# SYNOPSIS
-
-{app_name} [OPTIONS]
-
-{app_name} VERB CONFIG_FILE [PARAMETER]
-
-# DESCRIPTION
-
-A nimble user access manager for the wsfn webserver.
-
-{app_name} is a command line utility for setting up/managing
-user access to web services built on wsfn.
-
-# OPTIONS
-
--help
-: display help
-
--license
-: display license
-
--version
-: display version
-
--o
-: write output to filename
-
-
-# CONFIG_FILE
-
-{app_name} provides a command line interface for managing
-an access file. It provides the ability to 
-setup users as well as protected routes.
-
-# EXAMPLES
-
-Create an empty "access.toml" file.
-
-~~~
-{app_name} init access.toml
-~~~
-
-Add user id "Jane.Doe" to "access.toml".
-The access program prompts for a password. 
-
-~~~
-{app_name} update access.toml Jane.Doe
-~~~
-
-Remove "Jane.Doe" from access.toml.
-
-~~~
-{app_name} remove access.toml Jane.Doe
-~~~
-
-List users defined in access.toml.
-
-~~~
-{app_name} list access.toml 
-~~~
-
-Test a login for Jane.Doe (will prompt for password)
-
-~~~
-{app_name} test access.toml Jane.Doe
-~~~
-
-Routes follow a similar pattern of update, list, remove.
-(note you can update or remove more than one route at a time)
-
-~~~
-{app_name} routes update access.toml "/api/" "/private"
-
-{app_name} routes list access.toml
-
-{app_name} routes remove access.toml "/private/"
-~~~
-
-`
-
 	// Standard options
-	showHelp         bool
-	showVersion      bool
-	showLicense      bool
-	showExamples     bool
-	outputFName      string
-	quiet            bool
+	showHelp    bool
+	showVersion bool
+	showLicense bool
+	outputFName string
+	quiet       bool
 )
 
 func initAccess(fName string) error {
@@ -285,13 +197,62 @@ func manageRoutes(args []string) error {
 	}
 }
 
+// showHelpTopic displays help for a specific topic or the main help
+func showHelpTopic(w io.Writer, topic, appName, version, releaseDate, releaseHash string) {
+	var helpText string
+	
+	switch topic {
+	case "", "help":
+		helpText = wsfn.WebaccessMainHelp
+	case "access-control", "access":
+		helpText = wsfn.WebaccessAccessControlTopicHelp
+	case "users":
+		helpText = wsfn.WebaccessUsersTopicHelp
+	case "encryption":
+		helpText = wsfn.WebaccessEncryptionTopicHelp
+	case "config", "configuration":
+		helpText = wsfn.WebaccessConfigTopicHelp
+	default:
+		// Unknown topic - show main help with error message
+		fmt.Fprintf(w, "Unknown help topic: %s\n\n", topic)
+		fmt.Fprintf(w, "%s\n", wsfn.FmtHelp(wsfn.WebaccessMainHelp, appName, version, releaseDate, releaseHash))
+		return
+	}
+	
+	fmt.Fprintf(w, "%s\n", wsfn.FmtHelp(helpText, appName, version, releaseDate, releaseHash))
+}
+
 func main() {
 	appName := path.Base(os.Args[0])
-	// NOTE: the following is set when version.go is generated.
+	// NOTE: The following are set when version.go is generated
 	version := wsfn.Version
 	releaseDate := wsfn.ReleaseDate
 	releaseHash := wsfn.ReleaseHash
 	fmtHelp := wsfn.FmtHelp
+
+	// Handle -help TOPIC before flag parsing
+	// We need to check os.Args directly to support -help topic syntax
+	helpTopic := ""
+	if len(os.Args) > 1 {
+		for i := 1; i < len(os.Args); i++ {
+			if os.Args[i] == "-help" && i+1 < len(os.Args) {
+				// Check if next arg is not a flag (doesn't start with -)
+				if len(os.Args[i+1]) > 0 && os.Args[i+1][0] != '-' {
+					helpTopic = os.Args[i+1]
+					// Display help for topic and exit immediately
+					showHelpTopic(os.Stdout, helpTopic, appName, version, releaseDate, releaseHash)
+					os.Exit(0)
+				} else {
+					// Just -help, remove it so flag doesn't see it
+					newArgs := make([]string, 0, len(os.Args)-1)
+					newArgs = append(newArgs, os.Args[:i]...)
+					newArgs = append(newArgs, os.Args[i+1:]...)
+					os.Args = newArgs
+					break
+				}
+			}
+		}
+	}
 
 	// Standard Options
 	flag.BoolVar(&showHelp, "help", false, "display help")
@@ -312,11 +273,11 @@ func main() {
 
 	// Process flags and update the environment as needed.
 	if showHelp {
-		fmt.Fprintf(out, "%s\n", fmtHelp(helpText, appName, version, releaseDate, releaseHash))
+		showHelpTopic(out, helpTopic, appName, version, releaseDate, releaseHash)
 		os.Exit(0)
 	}
 	if showLicense {
-		fmt.Fprintln(out, wsfn.LicenseText)
+		fmt.Fprint(out, wsfn.LicenseText)
 		os.Exit(0)
 	}
 	if showVersion {
@@ -348,17 +309,24 @@ func main() {
 			os.Exit(1)
 		}
 	case 0:
-		fmt.Fprintf(eout, "%s\n", fmtHelp(helpText, appName, version, releaseDate, releaseHash))
+		fmt.Fprintf(eout, "%s\n", fmtHelp(wsfn.WebaccessMainHelp, appName, version, releaseDate, releaseHash))
 		os.Exit(1)
 	default:
 		verb, fName, userid = args[0], "", ""
 		if strings.Compare(verb, "routes") != 0 {
-			fmt.Fprintf(eout, "To many parameters, try %s -help\n", appName, appName)
+			fmt.Fprintf(eout, "To many parameters, try %s -help\n", appName)
 			os.Exit(1)
 		}
 	}
 
 	switch verb {
+		case "help":
+			topic := ""
+			if len(args) > 1 {
+				topic = args[1]
+			}
+			showHelpTopic(out, topic, appName, version, releaseDate, releaseHash)
+			os.Exit(0)
 	case "init":
 		err = initAccess(fName)
 		if err != nil {

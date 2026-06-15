@@ -32,6 +32,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
@@ -231,6 +232,218 @@ func (r *RedirectService) RedirectRouter(next http.Handler) http.Handler {
 			}
 		}
 		// If we make it this far, fall back to the default handler
+		next.ServeHTTP(w, req)
+	})
+}
+
+//
+// NOTE: Reverse Proxy Support
+//
+
+// ReverseProxyTarget holds the configuration for a single reverse proxy target
+type ReverseProxyTarget struct {
+	// TargetURL is the base URL to proxy requests to
+	TargetURL *url.URL
+	// Proxy is the httputil.ReverseProxy instance for this target
+	Proxy *httputil.ReverseProxy
+}
+
+// ReverseProxyService manages a collection of reverse proxy routes.
+// It follows the same pattern as RedirectService for consistency.
+type ReverseProxyService struct {
+	// routes maps URL prefixes to their reverse proxy targets
+	routes map[string]*ReverseProxyTarget
+}
+
+// NewReverseProxyService creates and initializes a new ReverseProxyService
+func NewReverseProxyService() *ReverseProxyService {
+	rps := new(ReverseProxyService)
+	rps.routes = make(map[string]*ReverseProxyTarget)
+	return rps
+}
+
+// HasReverseProxyRoutes returns true if any reverse proxy routes are configured
+func (rps *ReverseProxyService) HasReverseProxyRoutes() bool {
+	return len(rps.routes) > 0
+}
+
+// AddReverseProxyRoute adds a new reverse proxy route with validation
+func (rps *ReverseProxyService) AddReverseProxyRoute(prefix, targetURL string) error {
+	// Validate prefix
+	if strings.TrimSpace(prefix) == "" {
+		return fmt.Errorf("empty prefix not allowed")
+	}
+	
+	// Validate target URL
+	if strings.TrimSpace(targetURL) == "" {
+		return fmt.Errorf("empty target URL not allowed")
+	}
+	
+	parsedURL, err := url.Parse(targetURL)
+	if err != nil {
+		return fmt.Errorf("invalid URL %q: %w", targetURL, err)
+	}
+	
+	// Validate scheme - only http and https are supported
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return fmt.Errorf("unsupported scheme %q, only http and https are supported", parsedURL.Scheme)
+	}
+	
+	// Check for route collisions
+	if rps.routes == nil {
+		rps.routes = make(map[string]*ReverseProxyTarget)
+	}
+	
+	// Normalize prefix to ensure consistent comparison
+	normalizedPrefix := prefix
+	if !strings.HasSuffix(normalizedPrefix, "/") {
+		normalizedPrefix += "/"
+	}
+	
+	// Check for collisions with existing routes
+	for existingPrefix := range rps.routes {
+		normalizedExisting := existingPrefix
+		if !strings.HasSuffix(normalizedExisting, "/") {
+			normalizedExisting += "/"
+		}
+		
+		// Check if one prefix is a prefix of the other
+		if strings.HasPrefix(normalizedPrefix, normalizedExisting) || 
+		   strings.HasPrefix(normalizedExisting, normalizedPrefix) {
+			return fmt.Errorf("route %q collides with existing route %q", prefix, existingPrefix)
+		}
+	}
+	
+	// Create the reverse proxy target
+	target := &ReverseProxyTarget{
+		TargetURL: parsedURL,
+		Proxy:     httputil.NewSingleHostReverseProxy(parsedURL),
+	}
+	
+	// Store the route with the original prefix
+	rps.routes[prefix] = target
+	return nil
+}
+
+// Route returns the ReverseProxyTarget for a given prefix and a boolean indicating if it exists
+func (rps *ReverseProxyService) Route(prefix string) (*ReverseProxyTarget, bool) {
+	target, ok := rps.routes[prefix]
+	return target, ok
+}
+
+// UnmarshalTOML implements toml.Unmarshaler to handle reverse_proxy sections
+func (rps *ReverseProxyService) UnmarshalTOML(data interface{}) error {
+	if rps.routes == nil {
+		rps.routes = make(map[string]*ReverseProxyTarget)
+	}
+	
+	// data should be a map[string]interface{} with string values
+	if m, ok := data.(map[string]interface{}); ok {
+		for prefix, targetURL := range m {
+			if urlStr, ok := targetURL.(string); ok {
+				if err := rps.AddReverseProxyRoute(prefix, urlStr); err != nil {
+					return fmt.Errorf("failed to add reverse proxy route %s -> %s: %w", prefix, urlStr, err)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// MarshalTOML implements toml.Marshaler to output reverse_proxy as a map
+func (rps *ReverseProxyService) MarshalTOML() (interface{}, error) {
+	if rps == nil || !rps.HasReverseProxyRoutes() {
+		return nil, nil
+	}
+	
+	result := make(map[string]string)
+	for prefix, target := range rps.routes {
+		result[prefix] = target.TargetURL.String()
+	}
+	return result, nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler to handle reverse_proxy as a map
+func (rps *ReverseProxyService) UnmarshalJSON(data []byte) error {
+	if rps.routes == nil {
+		rps.routes = make(map[string]*ReverseProxyTarget)
+	}
+	
+	var m map[string]string
+	if err := json.Unmarshal(data, &m); err != nil {
+		return fmt.Errorf("failed to unmarshal reverse_proxy: %w", err)
+	}
+	
+	for prefix, targetURL := range m {
+		if err := rps.AddReverseProxyRoute(prefix, targetURL); err != nil {
+			return fmt.Errorf("failed to add reverse proxy route %s -> %s: %w", prefix, targetURL, err)
+		}
+	}
+	return nil
+}
+
+// MarshalJSON implements json.Marshaler to output reverse_proxy as a map
+func (rps *ReverseProxyService) MarshalJSON() ([]byte, error) {
+	if rps == nil || !rps.HasReverseProxyRoutes() {
+		return []byte("null"), nil
+	}
+	
+	result := make(map[string]string)
+	for prefix, target := range rps.routes {
+		result[prefix] = target.TargetURL.String()
+	}
+	return json.Marshal(result)
+}
+
+// ReverseProxyRouter returns an http.Handler that proxies requests matching
+// configured routes to their respective backends, passing non-matching requests
+// to the next handler in the chain.
+func (rps *ReverseProxyService) ReverseProxyRouter(next http.Handler) http.Handler {
+	if rps == nil || !rps.HasReverseProxyRoutes() {
+		return next
+	}
+	
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		// Find the longest matching prefix
+		var longestPrefix string
+		var target *ReverseProxyTarget
+		
+		for prefix, t := range rps.routes {
+			if strings.HasPrefix(req.URL.Path, prefix) {
+				// Check if this is the longest matching prefix so far
+				if len(prefix) > len(longestPrefix) {
+					longestPrefix = prefix
+					target = t
+				}
+			}
+		}
+		
+		if target != nil && longestPrefix != "" {
+			// Strip the prefix from the path
+			remainingPath := strings.TrimPrefix(req.URL.Path, longestPrefix)
+			
+			// Create new URL with target + remaining path
+			targetURL := *target.TargetURL
+			newPath := path.Join(targetURL.Path, remainingPath)
+			
+			// Ensure we don't have double slashes
+			newPath = strings.ReplaceAll(newPath, "//", "/")
+			
+			// Update the target URL with the new path
+			targetURL.Path = newPath
+			
+			// Update the request URL and Host
+			req.URL.Path = remainingPath
+			req.URL.RawPath = remainingPath
+			req.URL.Scheme = targetURL.Scheme
+			req.URL.Host = targetURL.Host
+			
+			// Use the proxy to serve the request
+			target.Proxy.ServeHTTP(w, req)
+			return
+		}
+		
+		// No matching proxy route, pass to next handler
 		next.ServeHTTP(w, req)
 	})
 }
@@ -599,6 +812,7 @@ func DefaultWebService() *WebService {
 	w := new(WebService)
 	w.DocRoot = "."
 	w.Http = DefaultService()
+	w.ReverseProxy = NewReverseProxyService()
 	return w
 }
 
@@ -899,9 +1113,9 @@ type WebService struct {
 	// Normally this is populated by a redirects.csv file.
 	Redirects map[string]string `json:"redirects,omitempty" toml:"redirects,omitempty"`
 
-	// ReverseProxy descibes the path web paths that are sent
+	// ReverseProxyService describes the path web paths that are sent
 	// to another proxied URL.
-	ReverseProxy map[string]string `json:"reverse_proxy,omitempty" toml:"reverse_proxy,omitempty"`
+	ReverseProxy *ReverseProxyService `json:"reverse_proxy,omitempty" toml:"reverse_proxy,omitempty"`
 }
 
 // Service holds the description needed to startup a service
@@ -1037,9 +1251,46 @@ func (ws *WebService) DumpWebService(fName string) error {
 
 // dumpWebServiceTOML writes a TOML file.
 func (ws *WebService) dumpWebServiceTOML(fName string) error {
+	// Create a temporary struct that can be properly marshaled by TOML
+	// We need to handle ReverseProxyService specially since TOML can't marshal it directly
+	type tomlCompatibleWebService struct {
+		DocRoot      string            `toml:"htdocs"`
+		AccessFile   string            `toml:"access_file,omitempty"`
+		Access       *Access           `toml:"access,omitempty"`
+		CORS         *CORSPolicy       `toml:"cors,omitempty"`
+		ContentTypes map[string]string `toml:"content_types,omitempty"`
+		RedirectsCSV string            `toml:"redirects_csv,omitempty"`
+		Redirects   map[string]string `toml:"redirects,omitempty"`
+		Http        *Service           `toml:"http,omitempty"`
+		Https       *Service           `toml:"https,omitempty"`
+		// For reverse proxy, we'll use a map that TOML can handle
+		ReverseProxy map[string]string `toml:"reverse_proxy,omitempty"`
+	}
+	
+	// Convert the WebService to the TOML-compatible version
+	tomlWS := tomlCompatibleWebService{
+		DocRoot:      ws.DocRoot,
+		AccessFile:   ws.AccessFile,
+		Access:       ws.Access,
+		CORS:         ws.CORS,
+		ContentTypes: ws.ContentTypes,
+		RedirectsCSV: ws.RedirectsCSV,
+		Redirects:   ws.Redirects,
+		Http:        ws.Http,
+		Https:       ws.Https,
+	}
+	
+	// Convert ReverseProxyService to map[string]string if it exists
+	if ws.ReverseProxy != nil && ws.ReverseProxy.HasReverseProxyRoutes() {
+		tomlWS.ReverseProxy = make(map[string]string)
+		for prefix, target := range ws.ReverseProxy.routes {
+			tomlWS.ReverseProxy[prefix] = target.TargetURL.String()
+		}
+	}
+	
 	buf := new(bytes.Buffer)
 	tomlEncoder := toml.NewEncoder(buf)
-	if err := tomlEncoder.Encode(ws); err != nil {
+	if err := tomlEncoder.Encode(tomlWS); err != nil {
 		return err
 	}
 	return ioutil.WriteFile(fName, buf.Bytes(), 0600)
@@ -1047,7 +1298,43 @@ func (ws *WebService) dumpWebServiceTOML(fName string) error {
 
 // dumpWebServiceJSON writes a JSON file.
 func (ws *WebService) dumpWebServiceJSON(fName string) error {
-	src, err := json.MarshalIndent(ws, "", "    ")
+	// Create a temporary struct that can be properly marshaled by JSON
+	type jsonCompatibleWebService struct {
+		DocRoot      string            `json:"htdocs"`
+		AccessFile   string            `json:"access_file,omitempty"`
+		Access       *Access           `json:"access,omitempty"`
+		CORS         *CORSPolicy       `json:"cors,omitempty"`
+		ContentTypes map[string]string `json:"content_types,omitempty"`
+		RedirectsCSV string            `json:"redirects_csv,omitempty"`
+		Redirects   map[string]string `json:"redirects,omitempty"`
+		Http        *Service           `json:"http,omitempty"`
+		Https       *Service           `json:"https,omitempty"`
+		// For reverse proxy, we'll use a map that JSON can handle
+		ReverseProxy map[string]string `json:"reverse_proxy,omitempty"`
+	}
+	
+	// Convert the WebService to the JSON-compatible version
+	jsonWS := jsonCompatibleWebService{
+		DocRoot:      ws.DocRoot,
+		AccessFile:   ws.AccessFile,
+		Access:       ws.Access,
+		CORS:         ws.CORS,
+		ContentTypes: ws.ContentTypes,
+		RedirectsCSV: ws.RedirectsCSV,
+		Redirects:   ws.Redirects,
+		Http:        ws.Http,
+		Https:       ws.Https,
+	}
+	
+	// Convert ReverseProxyService to map[string]string if it exists
+	if ws.ReverseProxy != nil && ws.ReverseProxy.HasReverseProxyRoutes() {
+		jsonWS.ReverseProxy = make(map[string]string)
+		for prefix, target := range ws.ReverseProxy.routes {
+			jsonWS.ReverseProxy[prefix] = target.TargetURL.String()
+		}
+	}
+	
+	src, err := json.MarshalIndent(jsonWS, "", "    ")
 	if err != nil {
 		return err
 	}
@@ -1081,20 +1368,38 @@ func (w *WebService) Run() error {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(fs))
 
+	// Build the middleware chain
+	// Order: RequestLogger -> AccessHandler -> ReverseProxyRouter -> StaticRouter -> mux
+	var handler http.Handler = mux
+	
+	// Add StaticRouter for dot file protection and content type headers
+	handler = StaticRouter(handler)
+	
+	// Add ReverseProxyRouter if reverse proxy routes are configured
+	if w.ReverseProxy != nil && w.ReverseProxy.HasReverseProxyRoutes() {
+		handler = w.ReverseProxy.ReverseProxyRouter(handler)
+	}
+	
+	// Add AccessHandler for authentication
+	handler = AccessHandler(handler, w.Access)
+	
+	// Add RequestLogger for request logging
+	handler = RequestLogger(handler)
+
 	// Run the configured services.
 	switch {
 	case w.Http != nil && w.Https != nil:
 		// Run our http service in a go routine
 		go func() {
-			http.ListenAndServe(w.Http.Hostname(), RequestLogger(AccessHandler(mux, w.Access)))
+			http.ListenAndServe(w.Http.Hostname(), handler)
 		}()
 		// Return our primary https service routine
-		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, RequestLogger(AccessHandler(mux, w.Access)))
+		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, handler)
 	case w.Https != nil:
-		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, RequestLogger(AccessHandler(mux, w.Access)))
+		return http.ListenAndServeTLS(w.Https.Hostname(), w.Https.CertPEM, w.Https.KeyPEM, handler)
 	case w.Http != nil:
-		return http.ListenAndServe(w.Http.Hostname(), RequestLogger(AccessHandler(mux, w.Access)))
+		return http.ListenAndServe(w.Http.Hostname(), handler)
 	default:
-		return http.ListenAndServe(":8000", RequestLogger(AccessHandler(mux, w.Access)))
+		return http.ListenAndServe(":8000", handler)
 	}
 }
