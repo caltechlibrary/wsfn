@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>wsfn</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>static-with-api - Static website with reverse proxy to API
+backend</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>Static content + Dynamic API on same domain</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>Common pattern: serve static website while proxying API requests to
+separate backend service. Allows single domain access with efficient
+static file serving and specialized backend processing.</p>
+<h1 id="prerequisites">PREREQUISITES</h1>
+<ol type="1">
+<li>Static website files in a directory (e.g., ./public)</li>
+<li>Backend API service running (e.g., localhost:9000)</li>
+</ol>
+<h1 id="configuration">CONFIGURATION</h1>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">htdocs</span> <span class="op">=</span> <span class="st">&quot;./public&quot;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[http]</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;8000&quot;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://localhost:9000/&quot;</span></span></code></pre></div>
+<p>Start server:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">webserver</span> start webserver.toml</span></code></pre></div>
+<h1 id="request-routing">REQUEST ROUTING</h1>
+<table>
+<thead>
+<tr>
+<th scope="col">Request URL</th>
+<th scope="col">Handler</th>
+<th scope="col">Backend URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/</td>
+<td>Static files</td>
+<td>./public/index.html</td>
+</tr>
+<tr>
+<td>/about.html</td>
+<td>Static files</td>
+<td>./public/about.html</td>
+</tr>
+<tr>
+<td>/api/users</td>
+<td>Reverse proxy</td>
+<td>http://localhost:9000/users</td>
+</tr>
+<tr>
+<td>/api/posts/123</td>
+<td>Reverse proxy</td>
+<td>http://localhost:9000/posts/123</td>
+</tr>
+</tbody>
+</table>
+<h1 id="path-stripping">PATH STRIPPING</h1>
+<p>Prefix is stripped before forwarding:</p>
+<ol type="1">
+<li>Browser requests: GET /api/users</li>
+<li>webserver matches prefix: /api/</li>
+<li>Strips prefix: /users</li>
+<li>Forwards to: http://localhost:9000/users</li>
+<li>Returns backend response to browser</li>
+</ol>
+<h1 id="query-parameters">QUERY PARAMETERS</h1>
+<p>Preserved exactly: /api/search?q=test&amp;page=1 -&gt;
+/search?q=test&amp;page=1</p>
+<h1 id="http-methods">HTTP METHODS</h1>
+<p>All methods forwarded: GET, POST, PUT, DELETE, PATCH, HEAD,
+OPTIONS</p>
+<h1 id="request-headers">REQUEST HEADERS</h1>
+<p>All headers forwarded: Authorization, Content-Type, X-*, Cookie</p>
+<h1 id="response-headers">RESPONSE HEADERS</h1>
+<p>All backend response headers returned to client.</p>
+<h1 id="development-environment">DEVELOPMENT ENVIRONMENT</h1>
+<p>Frontend on port 3000, backend on port 9000, webserver on port
+8000:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">htdocs</span> <span class="op">=</span> <span class="st">&quot;./public&quot;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[http]</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;8000&quot;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://localhost:9000/&quot;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/graphql/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://localhost:4000/&quot;</span></span></code></pre></div>
+<p>Access: - Static site: http://localhost:8000/ - API:
+http://localhost:8000/api/ - GraphQL: http://localhost:8000/graphql/</p>
+<h1 id="production-environment">PRODUCTION ENVIRONMENT</h1>
+<p>Always use HTTPS in production:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">htdocs</span> <span class="op">=</span> <span class="st">&quot;/var/www/html&quot;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[http]</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;80&quot;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">[https]</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">cert_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/letsencrypt/live/example.com/fullchain.pem&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">key_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/letsencrypt/live/example.com/privkey.pem&quot;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;443&quot;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://localhost:9000/&quot;</span></span></code></pre></div>
+<h1 id="multiple-backend-services">MULTIPLE BACKEND SERVICES</h1>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://api-service:9000/&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/auth/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://auth-service:9001/&quot;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/search/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://search-service:9002/&quot;</span></span></code></pre></div>
+<h1 id="https-backends">HTTPS BACKENDS</h1>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;https://api.example.com/&quot;</span></span></code></pre></div>
+<h1 id="see-also">SEE ALSO</h1>
+<p>reverse-proxy, config-file, tls</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>wsfn</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>static-website - Serving static HTML/CSS/JS websites</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>webserver start [DOCROOT] [URL]</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>Serve static websites - HTML, CSS, JavaScript, images, and other
+assets with built-in protection against serving hidden files
+(dot-files).</p>
+<h1 id="basic-usage">BASIC USAGE</h1>
+<p>Serve current directory:</p>
+<pre><code>webserver start</code></pre>
+<p>Serve specific directory:</p>
+<pre><code>webserver start /var/www/html</code></pre>
+<h1 id="document-root">DOCUMENT ROOT</h1>
+<p>Set via command line or configuration:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">htdocs</span> <span class="op">=</span> <span class="st">&quot;./public&quot;</span></span></code></pre></div>
+<h1 id="dot-file-protection">DOT-FILE PROTECTION</h1>
+<p>NOT SERVED: .htaccess, .git/, .env, .DS_Store, any file/directory
+starting with .</p>
+<p>Protection is ALWAYS enabled, cannot be disabled.</p>
+<h1 id="index-files">INDEX FILES</h1>
+<p>Directory requests do NOT automatically serve index.html.</p>
+<p>Option 1: Request index.html directly</p>
+<p>Option 2: Configure redirects:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">redirects_csv</span> <span class="op">=</span> <span class="st">&quot;redirects.csv&quot;</span></span></code></pre></div>
+<p>In redirects.csv:</p>
+<pre class="csv"><code>&quot;/&quot;,&quot;/index.html&quot;</code></pre>
+<h1 id="content-types">CONTENT TYPES</h1>
+<p>Built-in MIME types: .html, .css, .js, .json, .png, .jpg, .gif, .svg,
+.txt</p>
+<p>Custom MIME types:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[content_types]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;.xml&quot;</span> <span class="op">=</span> <span class="st">&quot;application/xml&quot;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;.wasm&quot;</span> <span class="op">=</span> <span class="st">&quot;application/wasm&quot;</span></span></code></pre></div>
+<h1 id="gzipped-files">GZIPPED FILES</h1>
+<p>Files with .gz extension served with Content-Encoding: gzip:</p>
+<ul>
+<li>data.json.gz -&gt; Content-Type: application/json; Content-Encoding:
+gzip</li>
+<li>script.js.gz -&gt; Content-Type: text/javascript; Content-Encoding:
+gzip</li>
+</ul>
+<h1 id="performance">PERFORMANCE</h1>
+<p>Highly optimized using Go’s http.FileServer: - Efficient file
+descriptor usage - Minimal memory allocation - Supports HTTP/2</p>
+<h1 id="see-also">SEE ALSO</h1>
+<p>config-file, reverse-proxy, static-with-api</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>

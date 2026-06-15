@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>wsfn</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>reverse-proxy - Forward requests to backend services</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>[reverse_proxy] PREFIX = TARGET_URL</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>Forward HTTP requests matching URL prefixes to other backend
+services. Useful for serving static websites while proxying API
+requests.</p>
+<h1 id="configuration">CONFIGURATION</h1>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://localhost:9000/&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/auth/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://localhost:9001/&quot;</span></span></code></pre></div>
+<h1 id="path-handling">PATH HANDLING</h1>
+<p>Prefix is stripped before forwarding:</p>
+<ul>
+<li>/api/users -&gt; proxied to http://backend:9000/users</li>
+<li>Query parameters preserved: /api/search?q=test -&gt;
+/search?q=test</li>
+<li>All HTTP methods supported</li>
+</ul>
+<h1 id="prefix-rules">PREFIX RULES</h1>
+<ul>
+<li>Must not be empty</li>
+<li>Should end with / (recommended)</li>
+<li>Must not overlap (e.g., /api and /api/users cannot both exist)</li>
+<li>Target URLs must use http:// or https:// scheme</li>
+</ul>
+<h1 id="validation">VALIDATION</h1>
+<ul>
+<li>Empty prefix: Rejected</li>
+<li>Empty target URL: Rejected</li>
+<li>Invalid URL scheme: Only http:// and https:// accepted</li>
+<li>Route collision: Overlapping prefixes rejected</li>
+</ul>
+<h1 id="example-static-website-with-dynamic-api">EXAMPLE: Static Website
+with Dynamic API</h1>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">htdocs</span> <span class="op">=</span> <span class="st">&quot;./public&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[http]</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;8000&quot;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://localhost:9000/&quot;</span></span></code></pre></div>
+<p>Result: - / -&gt; serves ./public/index.html - /api/users -&gt;
+proxied to http://localhost:9000/users</p>
+<h1 id="multiple-backends">MULTIPLE BACKENDS</h1>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://api-service:9000/&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/auth/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://auth-service:9001/&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/images/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://image-service:9002/&quot;</span></span></code></pre></div>
+<h1 id="https-backends">HTTPS BACKENDS</h1>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;https://api.example.com/&quot;</span></span></code></pre></div>
+<h1 id="troubleshooting">TROUBLESHOOTING</h1>
+<p>Backend Connection Refused: - Verify backend service is running -
+Check backend is listening on correct host/port - Ensure backend is
+accessible from webserver server</p>
+<h1 id="see-also">SEE ALSO</h1>
+<p>config-file, static-website, tls</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>

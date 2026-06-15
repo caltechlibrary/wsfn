@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>wsfn</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>redirects - Configure URL redirects</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>[redirects] SOURCE = DESTINATION</p>
+<p>redirects_csv = CSV_FILE</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>Automatic HTTP redirects (301 Moved Permanently) for URL paths or
+patterns.</p>
+<h1 id="configuration">CONFIGURATION</h1>
+<h2 id="inline">Inline</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[redirects]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/old-path/&quot;</span> <span class="op">=</span> <span class="st">&quot;/new-path/&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/legacy/&quot;</span> <span class="op">=</span> <span class="st">&quot;https://newsite.example.com/&quot;</span></span></code></pre></div>
+<h2 id="external-csv-file">External CSV File</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">redirects_csv</span> <span class="op">=</span> <span class="st">&quot;redirects.csv&quot;</span></span></code></pre></div>
+<p>In redirects.csv:</p>
+<pre class="csv"><code># Comments start with #
+/old-page.html,/new-page.html
+/legacy/,/archived/</code></pre>
+<h1 id="path-matching">PATH MATCHING</h1>
+<p>Prefix-based matching. Longest match wins.</p>
+<ul>
+<li>/old/ matches /old/, /old/page.html, /old/subdir/file.txt</li>
+<li>Matching portion preserved in destination</li>
+</ul>
+<h2 id="exact-matching">Exact Matching</h2>
+<p>To match exactly, include the full path:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[redirects]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/exact/path&quot;</span> <span class="op">=</span> <span class="st">&quot;/different/path&quot;</span></span></code></pre></div>
+<p>Request: /exact/path -&gt; Redirects to: /different/path Request:
+/exact/path/extra -&gt; No redirect (doesn’t match exactly)</p>
+<h1 id="redirect-types">REDIRECT TYPES</h1>
+<p>webserver currently only supports <strong>301 Moved
+Permanently</strong> redirects. This tells browsers and search engines
+that the resource has permanently moved to the new location.</p>
+<h1 id="use-cases">USE CASES</h1>
+<h2 id="website-migration">Website Migration</h2>
+<p>Redirect old URLs to new structure:</p>
+<pre class="csv"><code>/products/,/catalog/products/
+/blog/,/news/</code></pre>
+<h2 id="domain-changes">Domain Changes</h2>
+<p>Redirect old domain to new domain:</p>
+<pre class="csv"><code>/,https://newdomain.com/</code></pre>
+<h2 id="http-to-https">HTTP to HTTPS</h2>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[http]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;80&quot;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[https]</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;443&quot;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="kw">[redirects]</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;http://example.com/&quot;</span><span class="er">:</span> <span class="dt">&quot;https://example.com/&quot;</span></span></code></pre></div>
+<h2 id="trailing-slash-normalization">Trailing Slash Normalization</h2>
+<p>Ensure URLs always have trailing slashes:</p>
+<pre class="csv"><code>/about,/about/
+/contact,/contact/</code></pre>
+<h1 id="combining-with-reverse-proxy">COMBINING WITH REVERSE PROXY</h1>
+<p>Redirects processed BEFORE reverse proxy:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[redirects]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/v1/&quot;</span> <span class="op">=</span> <span class="st">&quot;/api/v2/&quot;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://backend:9000/&quot;</span></span></code></pre></div>
+<p>Request: /api/v1/users -&gt; Redirects to /api/v2/users -&gt; Proxied
+to backend</p>
+<h1 id="troubleshooting">TROUBLESHOOTING</h1>
+<p>Redirect Not Working: - Check source path spelling (case-sensitive) -
+Verify redirect in configuration - Ensure request path matches
+source</p>
+<p>Redirect Loop: - Avoid circular: /a -&gt; /b, /b -&gt; /a</p>
+<h1 id="see-also">SEE ALSO</h1>
+<p>config-file, reverse-proxy, static-website</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>

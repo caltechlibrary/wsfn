@@ -11,37 +11,36 @@
 <header>
 <a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
 </header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
 <nav>
 <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="INSTALL.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
     <li><a href="about.html">About</a></li>
-    <li><a href="search.html">Search</a></li>
-    <li><a href="https://github.com/caltechlibrary/wsfn">GitHub</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
 </ul>
 </nav>
-<section>
+<section id="main-content">
 <h1 id="name">NAME</h1>
-<p>webserver</p>
+<p>webserver - A nimble web server</p>
 <h1 id="synopsis">SYNOPSIS</h1>
 <p>webserver <a href="#options">OPTIONS</a></p>
-<p>webserver [VERB PARAMETERS || CONFIG_NAME] [DOCROOT]
-[URL_TO_LISTEN_ON]</p>
+<p>webserver [VERB [PARAMETERS] || CONFIG_FILE] [DOCROOT] [URL]</p>
 <h1 id="description">DESCRIPTION</h1>
-<p>A nimble web server.</p>
-<p>webserver is a command line utility for developing and testing static
-websites. It uses Go’s standard http libraries and can supports both
-http 1 and 2 out of the box. It provides a minimal set of extra features
-useful for developing and testing web services that leverage static
-content.</p>
+<p>A nimble web server for developing and testing static websites.</p>
+<p>webserver uses Go’s standard HTTP libraries and supports both
+HTTP/1.1 and HTTP/2 out of the box. It provides a minimal set of
+features useful for developing and testing web services that leverage
+static content.</p>
 <h1 id="options">OPTIONS</h1>
 <dl>
-<dt>-help</dt>
+<dt>-help [TOPIC]</dt>
 <dd>
-display help
+display help (this message) or help for TOPIC
 </dd>
 <dt>-license</dt>
 <dd>
@@ -51,68 +50,62 @@ display license
 <dd>
 display version
 </dd>
-<dt>-o</dt>
+<dt>-o FILE</dt>
 <dd>
-write output to filename
+write output to FILE
 </dd>
 </dl>
-<h1 id="config_file">CONFIG_FILE</h1>
-<p>webserver is configured through a configuration file. You can create
-an initialization file using the “init” action. By default the created
-initialation file is “webserver”.</p>
-<h1 id="action">ACTION</h1>
-<p>The following actions are available</p>
+<h1 id="verbs">VERBS</h1>
 <dl>
-<dt>init</dt>
+<dt>init CONFIG_FILE</dt>
 <dd>
-creates a “webservice.toml” file. This is used by webserver for
-configuration.
+creates a configuration file
 </dd>
-<dt>start</dt>
+<dt>start [CONFIG_FILE] [DOCROOT] [URL]</dt>
 <dd>
-starts up the web service
+starts the web server
 </dd>
-<dt>htdocs</dt>
+<dt>htdocs CONFIG_FILE DOCROOT</dt>
 <dd>
-sets the document root
+sets the document root in configuration
 </dd>
-<dt>cert_pem</dt>
+<dt>url CONFIG_FILE URL</dt>
 <dd>
-set the path to find cert.pem file for TLS
+sets the URL to listen on
 </dd>
-<dt>key_pem</dt>
+<dt>cert_pem CONFIG_FILE PATH</dt>
 <dd>
-set the path to find the key.pem file for TLS
+sets TLS certificate file path
 </dd>
-<dt>auth</dt>
+<dt>key_pem CONFIG_FILE PATH</dt>
 <dd>
-set auth type if used, e.g. Basic
+sets TLS key file path
 </dd>
-<dt>access</dt>
+<dt>auth CONFIG_FILE TYPE</dt>
 <dd>
-sets an external access file. The external access file is managed with
-the “webaccess” tool.
+sets authentication type (e.g., Basic)
+</dd>
+<dt>access CONFIG_FILE FILE</dt>
+<dd>
+sets external access control file
 </dd>
 </dl>
 <h1 id="examples">EXAMPLES</h1>
-<p>Run web server using the content in the current directory (assumes
-there is no “webserver” file in the working directory).</p>
+<p>Run web server using the content in the current directory:</p>
 <pre><code>webserver start</code></pre>
-<p>Run web server using a specified directory</p>
+<p>Run web server using a specified directory:</p>
 <pre><code>   webserver start /www/htdocs</code></pre>
-<p>Running web server using a “/etc/webserver” file for
-configuration.</p>
+<p>Run with specific configuration file:</p>
 <pre><code>   webserver start /etc/webserver</code></pre>
-<p>Running the web server using the basic setup of “/etc/webserver” and
-overriding the default htdocs root and URL listened on</p>
-<pre><code>   webserver start /etc/webserver ./htdocs http://localhost:9011</code></pre>
-<p>Configure your web server with these steps</p>
-<pre><code>   webserver init webserver.toml
-   webserver htdocs webserver.toml /var/www/htdocs
-   webserver url webserver.toml https://www.example.edu:443
-   webserver cert_pem webserver.toml /etc/certs/cert.pem
-   webserver key_pem webserver.toml /etc/certs/key.pem
-   webserver access webserver.toml /etc/wsfn/access.toml</code></pre>
+<h1 id="topics">TOPICS</h1>
+<p>Available help topics:</p>
+<p>config-file Configuration file format and options reverse-proxy
+Forward requests to backend services static-website Serving static
+websites static-with-api Example: Static site with dynamic API backend
+tls HTTPS/TLS configuration auth Authentication setup cors Cross-Origin
+Resource Sharing redirects URL redirection rules</p>
+<p>Use ‘webserver help TOPIC’ or ‘webserver -help TOPIC’ for more
+information.</p>
 </section>
 <footer-global></footer-global>
 </body>

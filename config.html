@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>wsfn</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>config - Configuration file format for webaccess</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>webaccess VERB CONFIG_FILE</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>The webaccess tool uses TOML configuration files to store user
+credentials and authentication settings. This topic describes the
+configuration file format and options.</p>
+<h1 id="configuration-file">CONFIGURATION FILE</h1>
+<p>The configuration file is a TOML file that contains authentication
+settings and user credentials.</p>
+<h2 id="default-location">Default Location</h2>
+<p>No default location. You must specify the configuration file for all
+commands.</p>
+<h2 id="creating-a-configuration-file">Creating a Configuration
+File</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> init access.toml</span></code></pre></div>
+<p>This creates a new file with default settings.</p>
+<h1 id="file-format">FILE FORMAT</h1>
+<h2 id="complete-example">Complete Example</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_type</span> <span class="op">=</span> <span class="st">&quot;Basic&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Restricted Area&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">encryption</span> <span class="op">=</span> <span class="st">&quot;argon2id&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[access.alice]</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">salt</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="dv">4</span><span class="op">,</span> <span class="dv">5</span><span class="op">,</span> <span class="dv">6</span><span class="op">,</span> <span class="dv">7</span><span class="op">,</span> <span class="dv">8</span><span class="op">,</span> <span class="dv">9</span><span class="op">,</span> <span class="dv">10</span><span class="op">,</span> <span class="dv">11</span><span class="op">,</span> <span class="dv">12</span><span class="op">,</span> <span class="dv">13</span><span class="op">,</span> <span class="dv">14</span><span class="op">,</span> <span class="dv">15</span><span class="op">,</span> <span class="dv">16</span><span class="op">,</span> <span class="dv">17</span><span class="op">,</span> <span class="dv">18</span><span class="op">,</span> <span class="dv">19</span><span class="op">,</span> <span class="dv">20</span><span class="op">,</span> <span class="dv">21</span><span class="op">,</span> <span class="dv">22</span><span class="op">,</span> <span class="dv">23</span><span class="op">,</span> <span class="dv">24</span><span class="op">,</span> <span class="dv">25</span><span class="op">,</span> <span class="dv">26</span><span class="op">,</span> <span class="dv">27</span><span class="op">,</span> <span class="dv">28</span><span class="op">,</span> <span class="dv">29</span><span class="op">,</span> <span class="dv">30</span><span class="op">,</span> <span class="dv">31</span><span class="op">,</span> <span class="dv">32</span> <span class="op">]</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="er">...</span> <span class="op">]</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[access.bob]</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">salt</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="er">...</span> <span class="op">]</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="er">...</span> <span class="op">]</span></span></code></pre></div>
+<h2 id="sections">Sections</h2>
+<h3 id="main-section">Main Section</h3>
+<table>
+<thead>
+<tr>
+<th scope="col">Key</th>
+<th scope="col">Type</th>
+<th scope="col">Description</th>
+<th scope="col">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>auth_type</td>
+<td>string</td>
+<td>Authentication type</td>
+<td>“Basic”</td>
+</tr>
+<tr>
+<td>auth_name</td>
+<td>string</td>
+<td>Realm/description</td>
+<td>“”</td>
+</tr>
+<tr>
+<td>encryption</td>
+<td>string</td>
+<td>Password encryption method</td>
+<td>“argon2id”</td>
+</tr>
+</tbody>
+</table>
+<h3 id="user-sections">User Sections</h3>
+<p>Each user has a section under [access]:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[access.USERNAME]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">salt</span> <span class="op">=</span> <span class="op">[</span> <span class="er">...</span> <span class="op">]</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="op">[</span> <span class="er">...</span> <span class="op">]</span></span></code></pre></div>
+<h1 id="main-settings">MAIN SETTINGS</h1>
+<h2 id="auth_type">auth_type</h2>
+<p>The authentication type to use.</p>
+<p><strong>Supported values:</strong> - “Basic” - HTTP Basic
+authentication (currently the only supported type)</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_type</span> <span class="op">=</span> <span class="st">&quot;Basic&quot;</span></span></code></pre></div>
+<h2 id="auth_name">auth_name</h2>
+<p>The realm or description for authentication. Displayed in
+authentication prompts in browsers.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Restricted Area&quot;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Admin Console&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Please authenticate&quot;</span></span></code></pre></div>
+<h2 id="encryption">encryption</h2>
+<p>The password encryption method to use.</p>
+<p><strong>Supported values:</strong> - “argon2id” - Recommended
+(default) - “pbkdf2” - NIST-approved - “sha512” - Legacy - “md5” -
+Legacy, not recommended</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">encryption</span> <span class="op">=</span> <span class="st">&quot;argon2id&quot;</span></span></code></pre></div>
+<h1 id="user-settings">USER SETTINGS</h1>
+<p>Each user section contains:</p>
+<h2 id="salt">salt</h2>
+<p>Random bytes used for password hashing. Must be 32 bytes for
+argon2id.</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[access.alice]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">salt</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="er">...</span> <span class="dv">32</span> <span class="er">bytes</span> <span class="er">...</span> <span class="op">]</span></span></code></pre></div>
+<h2 id="key">key</h2>
+<p>The hashed password. Length varies by encryption method.</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[access.alice]</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="er">...</span> <span class="er">hashed</span> <span class="er">password</span> <span class="er">...</span> <span class="op">]</span></span></code></pre></div>
+<h1 id="examples">EXAMPLES</h1>
+<h2 id="minimal-configuration">Minimal Configuration</h2>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_type</span> <span class="op">=</span> <span class="st">&quot;Basic&quot;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Secure Area&quot;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">encryption</span> <span class="op">=</span> <span class="st">&quot;argon2id&quot;</span></span></code></pre></div>
+<h2 id="configuration-with-users">Configuration with Users</h2>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_type</span> <span class="op">=</span> <span class="st">&quot;Basic&quot;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Admin Area&quot;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="dt">encryption</span> <span class="op">=</span> <span class="st">&quot;argon2id&quot;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[access.alice]</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="dt">salt</span> <span class="op">=</span> <span class="op">[</span> <span class="er">...</span> <span class="op">]</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="op">[</span> <span class="er">...</span> <span class="op">]</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[access.bob]</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="dt">salt</span> <span class="op">=</span> <span class="op">[</span> <span class="er">...</span> <span class="op">]</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="op">[</span> <span class="er">...</span> <span class="op">]</span></span></code></pre></div>
+<h1 id="file-locations">FILE LOCATIONS</h1>
+<h2 id="recommended-locations">Recommended Locations</h2>
+<ul>
+<li>/etc/wsfn/access.toml (system-wide)</li>
+<li>./access.toml (project-specific)</li>
+<li>~/.config/wsfn/access.toml (user-specific)</li>
+</ul>
+<h2 id="security-considerations">Security Considerations</h2>
+<ul>
+<li>Restrict file permissions: chmod 600</li>
+<li>Restrict ownership: chown root:root (for system files)</li>
+<li>Backup regularly</li>
+<li>Don’t commit to version control</li>
+</ul>
+<h1 id="toml-syntax">TOML SYNTAX</h1>
+<p>TOML (Tom’s Obvious, Minimal Language) is easy to read and write.</p>
+<h2 id="basic-syntax">Basic Syntax</h2>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Comments start with #</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="st">&quot;value&quot;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[section]</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="st">&quot;value&quot;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="kw">[section.subsection]</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="st">&quot;value&quot;</span></span></code></pre></div>
+<h2 id="data-types">Data Types</h2>
+<ul>
+<li>Strings: “value” or ‘value’</li>
+<li>Integers: 123</li>
+<li>Floats: 123.45</li>
+<li>Booleans: true, false</li>
+<li>Arrays: [ 1, 2, 3 ]</li>
+<li>Tables: [section]</li>
+</ul>
+<h1 id="see-also">SEE ALSO</h1>
+<p>access-control, users, encryption</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>

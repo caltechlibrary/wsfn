@@ -11,19 +11,20 @@
 <header>
 <a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
 </header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
 <nav>
 <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="INSTALL.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
     <li><a href="about.html">About</a></li>
-    <li><a href="search.html">Search</a></li>
-    <li><a href="https://github.com/caltechlibrary/wsfn">GitHub</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
 </ul>
 </nav>
-<section>
+<section id="main-content">
 <h1 id="user-manual">User Manual</h1>
 <ul>
 <li><a href="INSTALL.html">Installation</a></li>
@@ -32,10 +33,30 @@
 <li><a href="webaccess.1.html">webaccess</a></li>
 <li><a href="webserver.1.html">webserver</a></li>
 </ul></li>
+<li>Topics
+<ul>
+<li><a href="access-control.html">Access Control</a>
+<ul>
+<li><a href="users.html">Users</a></li>
+<li><a href="auth.html">Authentication</a></li>
+<li><a href="config.html">Access Configuration</a></li>
+</ul></li>
+<li><a href="config-file.html">Web Service Config</a>
+<ul>
+<li><a href="cors.html">CORS</a></li>
+<li><a href="encryption.html">Encryption</a>
+<ul>
+<li><a href="tls.html">TLS</a></li>
+</ul></li>
+<li><a href="redirects.html">Redirects</a></li>
+<li><a href="reverse-proxy.html">Reverse Proxy</a></li>
+<li><a href="static-website.html">Static Websites</a></li>
+<li><a href="static-with-api.html">Static Websites with an API</a></li>
+</ul></li>
+</ul></li>
 <li><a href="webservice.toml-example">Example TOML
 configuraiton</a></li>
 <li><a href="about.html">About</a></li>
-<li><a href="search.html">Search documentation</a></li>
 </ul>
 </section>
 <footer-global></footer-global>

@@ -1,7 +1,22 @@
 ---
 title: wsfn
 abstract: |-
-  A golang package providing simple static http services.
+  _wsfn_ is a package for common web functions Caltech Library uses 
+  in various Golang based Caltech Library tools and services. The goal 
+  is to standardize our handling of web interactions.
+
+  + wsfn.CORSPolicy is a structure for adding CORS headers to a http Handler
+  + StaticRouter is a http Handler Function for working with static routes
+  + RedirectRouter handles simple target prefix, destination prefix redirect handling
+      + AddRedirectRoute adds a target prefix and destination prefix
+      + HasRedirectRoutes return true if any redirect routes are configured
+      + RedirectRouter uses the internal redirect data to handle redirects
+  + ReverseProxy router lets front other web services.
+
+  An example **webserver** is also provided to demonstrate some of the
+  functionality available with this package. The **webserver** is
+  intended for instructional purposes only and shouldn't be used in a
+  production setting.
 authors:
   - family_name: Doiel
     given_name: R. S.
@@ -12,7 +27,7 @@ maintainer:
   - name: https://orcid.org/0000-0003-0900-6903
 
 repository_code: https://github.com/caltechlibrary/wsfn
-version: 0.0.14
+version: 0.1.0
 license_url: https://caltechlibrary.github.io/wsfn/LICENSE
 
 programming_language:
@@ -28,9 +43,10 @@ date_released: 2026-01-05
 About this software
 ===================
 
-## wsfn 0.0.14
+## wsfn 0.1.0
 
-This is a maintenance release compiled with Go version 1.25.5 and updated dependencies.
+- Added reverse proxy support.
+- Upgraded Go to v1.26.4
 
 ## Authors
 
@@ -44,7 +60,22 @@ This is a maintenance release compiled with Go version 1.25.5 and updated depend
 - https://orcid.org/0000-0003-0900-6903
 
 
-A golang package providing simple static http services.
+_wsfn_ is a package for common web functions Caltech Library uses 
+in various Golang based Caltech Library tools and services. The goal 
+is to standardize our handling of web interactions.
+
++ wsfn.CORSPolicy is a structure for adding CORS headers to a http Handler
++ StaticRouter is a http Handler Function for working with static routes
++ RedirectRouter handles simple target prefix, destination prefix redirect handling
+    + AddRedirectRoute adds a target prefix and destination prefix
+    + HasRedirectRoutes return true if any redirect routes are configured
+    + RedirectRouter uses the internal redirect data to handle redirects
++ ReverseProxy router lets front other web services.
+
+An example **webserver** is also provided to demonstrate some of the
+functionality available with this package. The **webserver** is
+intended for instructional purposes only and shouldn't be used in a
+production setting.
 
 - [License](https://caltechlibrary.github.io/wsfn/LICENSE)
 - [Code Repository](https://github.com/caltechlibrary/wsfn)
@@ -59,11 +90,13 @@ A golang package providing simple static http services.
 
 ## Software Requirements
 
-- Go >= 1.24.2
-- GNU Make > 3
-- Pandoc >= 3.1
-- CMTools >= 0.0.23
+- Go >= 1.26.4
 
 
+## Software Suggestions
+
+- GNU Make > 3.8
+- Pandoc >= 3.9
+- CMTools >= 0.0.45b
 
 

@@ -11,23 +11,45 @@
 <header>
 <a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
 </header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
 <nav>
 <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="INSTALL.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
     <li><a href="about.html">About</a></li>
-    <li><a href="search.html">Search</a></li>
-    <li><a href="https://github.com/caltechlibrary/wsfn">GitHub</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
 </ul>
 </nav>
-<section>
-<h1 id="installation-for-development-of-wsfn">Installation for
-development of <strong>wsfn</strong></h1>
-<p><strong>wsfn</strong> A golang package providing simple static http
-services.</p>
+<section id="main-content">
+<h1 id="installation-wsfn">Installation <strong>wsfn</strong></h1>
+<p><strong>wsfn</strong> <em>wsfn</em> is a package for common web
+functions Caltech Library uses in various Golang based Caltech Library
+tools and services. The goal is to standardize our handling of web
+interactions.</p>
+<ul>
+<li>wsfn.CORSPolicy is a structure for adding CORS headers to a http
+Handler</li>
+<li>StaticRouter is a http Handler Function for working with static
+routes</li>
+<li>RedirectRouter handles simple target prefix, destination prefix
+redirect handling
+<ul>
+<li>AddRedirectRoute adds a target prefix and destination prefix</li>
+<li>HasRedirectRoutes return true if any redirect routes are
+configured</li>
+<li>RedirectRouter uses the internal redirect data to handle
+redirects</li>
+</ul></li>
+<li>ReverseProxy router lets front other web services.</li>
+</ul>
+<p>An example <strong>webserver</strong> is also provided to demonstrate
+some of the functionality available with this package. The
+<strong>webserver</strong> is intended for instructional purposes only
+and shouldn’t be used in a production setting.</p>
 <h2 id="quick-install-with-curl-or-irm">Quick install with curl or
 irm</h2>
 <p>There is an experimental installer.sh script that can be run with the
@@ -40,9 +62,22 @@ would be run from your shell (e.g. Terminal on macOS).</p>
 <p>If you are running Windows 10 or 11 use the Powershell command
 below.</p>
 <div class="sourceCode" id="cb2"><pre
-class="sourceCode ps1"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">irm</span> https<span class="op">://</span>caltechlibrary<span class="op">.</span><span class="fu">github</span><span class="op">.</span><span class="fu">io</span><span class="op">//</span>installer<span class="op">.</span><span class="fu">ps1</span> <span class="op">|</span> <span class="fu">iex</span></span></code></pre></div>
+class="sourceCode ps1"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">irm</span> https<span class="op">://</span>caltechlibrary<span class="op">.</span><span class="fu">github</span><span class="op">.</span><span class="fu">io</span><span class="op">/</span>wsfn<span class="op">/</span>installer<span class="op">.</span><span class="fu">ps1</span> <span class="op">|</span> <span class="fu">iex</span></span></code></pre></div>
+<h3 id="if-your-are-running-macos-or-windows">If your are running macOS
+or Windows</h3>
+<p>You may get security warnings if you are using macOS or Windows. See
+the notes for the specific operating system you’re using to fix
+issues.</p>
+<ul>
+<li><a href="INSTALL_NOTES_macOS.html">INSTALL_NOTES_macOS.md</a></li>
+<li><a
+href="INSTALL_NOTES_Windows.html">INSTALL_NOTES_Windows.md</a></li>
+</ul>
 <h2 id="installing-from-source">Installing from source</h2>
 <h3 id="required-software">Required software</h3>
+<ul>
+<li>Go &gt;= 1.26.4</li>
+</ul>
 <h3 id="steps">Steps</h3>
 <ol type="1">
 <li>git clone https://github.com/caltechlibrary/wsfn</li>

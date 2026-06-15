@@ -1,3 +1,4 @@
+
 /**
  * site.css - stylesheet for the Caltech Library's Digital Library Development Group's sandbox.
  *
@@ -5,30 +6,99 @@
  *
  * Secondary pallet:
  *
- * slategrey: #AAA99F
  * lightgrey: #C8C8C8
- * grey: #76776B
+ * grey: #76777B
  * darkgrey: #616265
+ * slategrey: #AAA99F
  *
  * Impact Pallete see: http://identity.caltech.edu/web/colors
+ *
+ * TODO: Need to make a small screen friendly version
+ *
+ *
+ * ============================================
+ * Customization & Theming Notes
+ * ============================================
+ *
+ * This stylesheet uses CSS custom properties (variables)
+ * to allow optional theming and customization.
+ *
+ * Default values are defined in the :root selector below.
+ * These defaults will be used automatically if no overrides
+ * are provided.
+ *
+ * To customize styles, create a separate CSS file and define
+ * your own :root variables there. Then include that file
+ * AFTER this stylesheet in your HTML.
+ *
+ * Example:
+ *
+ *   <link rel="stylesheet" href="site.css">
+ *   <link rel="stylesheet" href="custom.css">
+ *
+ * In custom.css:
+ *
+ *   :root {
+ *     --color-primary: #0055cc;
+ *     --color-nav-bg: black;
+ *   }
+ *
+ * Only override the variables you need—everything else will
+ * fall back to the defaults defined here.
+ *
+ * This approach allows:
+ *   - Zero configuration for most users
+ *   - Simple overrides for advanced users
+ *   - Safe fallback values if variables are missing
+ *
+ * Note: CSS applies the "cascade" rule, meaning later files
+ * override earlier ones when selectors have equal specificity.
  */
+
+/* Base values */
+:root {
+  /* Primary */
+  --color-primary: #FF6E1E;
+
+  /* Secondary palette */
+  --color-lightgrey: #C8C8C8;
+  --color-grey: #76777B;
+  --color-darkgrey: #616265;
+  --color-slategrey: #AAA99F;
+
+  /* Base */
+  --color-text: black;
+  --color-bg: white;
+  --color-link: #747267;
+  --color-nav-bg: #333333;
+  --color-footer-bg: #303030;
+  --color-border: red;
+
+  --font-family-base: Open Sans, Helvetica, Sans-Serif;
+  --font-size-base: 14px;
+
+  /* special cases */
+  --color-announcement: white;
+  --color-bg-announcement: orange;
+}
+
 body {
      margin: 0;
      border: 0;
      padding: 0;
      width: 100%;
      height: 100%;
-     color: black;
-     background-color: white;
-     font-family: Open Sans, Helvetica, Sans-Serif;
-     font-size: 14px;
+     color: var(--color-text, black);
+     background-color: var(--color-bg, white);
+     font-family: var(--font-family-base, Open Sans, Helvetica, Sans-Serif);
+     font-size: var(--font-size-base, 14px);
 }
 
 header {
      position: relative;
      display: block;
-     color: black;
-     background-color: white;
+     color: var(--color-bg, white);
+     background-color: var(--color-bg, white);
      z-index: 2;
      height: 105px;
      vertical-align: middle;
@@ -52,25 +122,23 @@ header h1 {
      font-size: 3em;
      font-weight: normal;
      vertical-align: 0.78em;
-     color: #FF6E1E;
+     color: var(--color-primary, #FF6E1E);
 }
 
 header a, header a:link, header a:visited, header a:active, header a:hover, header a:focus {
-     color: #FF6E1E;
-     background-color: inherit;
+    color: var(--color-primary, #FF6E1E);
+    background-color: inherit;
 }
 
-
 a, a:link, a:visited {
-/*     color: #76776B; */
-     color: #666666;
-     background-color: inherit;
-     text-decoration: none;
+    color: var(--color-link, #747267);
+    background-color: inherit;
+    text-decoration: none;
 }
 
 a:active, a:hover, a:focus {
-    color: #FF6E1E;
-    font-weight: bolder;
+  color: var(--color-primary, #FF6E1E);
+  font-weight: bolder;
 }
 
 nav {
@@ -81,8 +149,8 @@ nav {
      padding: 0;
      font-size: 0.78em;
      vertical-align: middle;
-     color: black;
-     background-color: #76776B;
+     color: var(--color-text, black);
+     background-color: var(--color-nav-bg, #333333);
      text-align: left;
 }
 
@@ -94,17 +162,16 @@ nav div {
 }
 
 nav a, nav a:link, nav a:visited, nav a:active {
-     color: white;
-     background-color: inherit;
-     text-decoration: none;
+    color: var(--color-bg, white);
+    background-color: inherit;
+    text-decoration: none;
 }
 
 nav a:hover, nav a:focus {
-     color: #FF6E1E; 
-     background-color: inherit;
-     text-decoration: none;
+    color: var(--color-primary, #FF6E1E);
+    background-color: inherit;
+    text-decoration: none;
 }
-
 
 nav div h2 {
      position: relative;
@@ -126,7 +193,7 @@ nav ul {
      padding-left: 0.24em;
      list-style-type: none;
      text-align: left;
-     text-decoration: none; 
+     text-decoration: none;
 }
 
 nav ul li {
@@ -140,13 +207,24 @@ section {
      width: auto;
      max-width: 98%;
      height: 100%;
-     color: black;
-     background-color: white;
+     color: var(--color-text, black);
+     background-color: var(--color-bg, white);
      margin: 0;
-     padding-top: 0;
+     padding-top: 2em;
      padding-bottom: 2em;
      padding-left: 1em;
-     padding-right: 0;
+     padding-right: 2em;
+}
+
+section > menu {
+	display: flex;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+section > menu > li {
+	flex-grow: 1;
 }
 
 section h1 {
@@ -160,7 +238,7 @@ section h2 {
 
 section h3 {
     font-size: 1em;
-    text-transform: uppercase;
+    /* text-transform: uppercase; */
 }
 
 section ul {
@@ -168,14 +246,23 @@ section ul {
 }
 
 
-section a, section a:link, section a:visited {
+section a, section a:link, section a:visited, section a:active {
     font-style: italic;
     font-weight: normal;
+    text-decoration: underline;
 }
 
-section a:active, section a:hover, section a:focus {
-    /* orange: #FF6E1E; */
-    color: #FF6E1E;
+section a:hover, section a:focus {
+    color: var(--color-primary, #FF6E1E);
+    text-decoration: none;
+}
+
+/*
+ * We want the links in the output of the Builder widget to pop out
+ * as links.
+ */
+section.widget a, section.widget a:link, section.widget a:visited, section.widget a:active {
+    color: var(--color-widget-link, blue);
 }
 
 aside {
@@ -218,9 +305,8 @@ footer {
      display: block;
      width: 100%;
      height: 2em;
-     color: white;
-     background-color: #333333; 
-
+     color: var(--color-bg, white);
+     background-color: var(--color-footer-bg, #303030);
      font-size: 80%;
      text-align: left;
      vertical-align: middle;
@@ -232,8 +318,8 @@ footer h1, footer span, footer address {
      display: inline-block;
      margin: 0;
      padding-left: 0.24em;
-     font-family: Open Sans, Helvetica, Sans-Serif;
-     font-size: 1em;
+     font-family: var(--font-family-base, Open Sans, Helvetica, Sans-Serif);
+     font-size: 1m;
 }
 
 footer h1 {
@@ -244,16 +330,52 @@ footer a, footer a:link, footer a:visited, footer a:active, footer a:focus, foot
      padding: 0;
      display: inline;
      margin: 0;
-     color: #FF6E1E;
+     color: var(--color-primary, #FF6E1E);
      text-decoration: none;
 }
 
+/* Form styling */
+/*
+form {
+    display: block;
+    padding: 1em;
+    border-style: solid;
+    border-radius: 0.82em;
+    border-width: 0.18em;
+    border-color: red;
+}
+*/
+
+form div label {
+    display: inline;
+    margin: 0.72em;
+    text-align: right;
+    min-width: 5em;
+}
+
+form div input[type=button] {
+    margin: 1em;
+    border-radius: 82em;
+}
+
+/* Widget is the outer container for either a
+ * BuilderWidget or SearchWidger */
+.widget {
+    display: block;
+    flex-flow: row wrap;
+    padding: 1em;
+    border-style: solid;
+    border-radius: 0.82em;
+    border-width: 0.18em;
+    border-color: var(--border-color, red);
+}
+
 .announcement {
-    color: black;
-    background-color: yellow;
+    color: var(--color-announcement, white);
+    background-color: var(--color-bg-announcement, orange);
     padding: 1em;
     margin-top: 2em;
-    margin-bottom: 0em;
+    margin-bottom: 2em;
     margin-left: 0em;
     margin-right: 0em;
     text-overflow: ellipsis;
@@ -309,7 +431,7 @@ footer a, footer a:link, footer a:visited, footer a:active, footer a:focus, foot
 }
 
 .search-result:nth-child(odd) {
-    background-color: lightgrey;
+    background-color: var(--color-lightgrey, lightgrey);
 }
 
 .field-name, .matched-name, .index-name {
@@ -330,4 +452,31 @@ footer a, footer a:link, footer a:visited, footer a:active, footer a:focus, foot
 .index-name, .index-value {
     font-style: italic;
     font-size: smaller;
+}
+
+a.visually-hidden:focus {
+    position: static;
+    display: block;
+    width: 9rem;
+    height: 1rem;
+    margin: 5px;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--color-text, while);
+    border-radius: 4px;
+    background-color: var(--color-bg, while);
+}
+
+a.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>wsfn</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>access-control - Access control concepts and configuration</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>access_file = ACCESS_FILE_PATH</p>
+<p>[access] auth_type = “Basic” auth_name = REALM routes = [ PATH, …
+]</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>The access control feature provides Basic HTTP authentication for
+protecting access to your web services. Users and passwords are stored
+in an access control file and managed using this tool.</p>
+<h1 id="access-control-file">ACCESS CONTROL FILE</h1>
+<p>The access control file is a TOML file that contains: -
+Authentication settings - User credentials (encrypted) - Routes that
+require authentication</p>
+<h2 id="default-location">Default Location</h2>
+<p>Typically specified in your webserver configuration:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">access_file</span> <span class="op">=</span> <span class="st">&quot;/etc/wsfn/access.toml&quot;</span></span></code></pre></div>
+<h2 id="file-format">File Format</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_type</span> <span class="op">=</span> <span class="st">&quot;Basic&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Restricted Area&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">encryption</span> <span class="op">=</span> <span class="st">&quot;argon2id&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[access.alice]</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">salt</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="er">...</span> <span class="op">]</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="er">...</span> <span class="op">]</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[access.bob]</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">salt</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="er">...</span> <span class="op">]</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">key</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="er">...</span> <span class="op">]</span></span></code></pre></div>
+<h1 id="authentication-types">AUTHENTICATION TYPES</h1>
+<p>Currently, only <strong>Basic</strong> authentication is
+supported.</p>
+<h2 id="basic-authentication">Basic Authentication</h2>
+<p>Standard HTTP Basic authentication using username/password.
+Credentials are base64-encoded in the Authorization header.</p>
+<p><strong>Always use HTTPS with Basic authentication!</strong></p>
+<h1 id="authentication-scope">AUTHENTICATION SCOPE</h1>
+<h2 id="protect-all-paths">Protect All Paths</h2>
+<p>If no routes are specified, authentication is required for ALL
+requests:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[access]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_type</span> <span class="op">=</span> <span class="st">&quot;Basic&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Secure Area&quot;</span></span></code></pre></div>
+<h2 id="protect-specific-paths">Protect Specific Paths</h2>
+<p>Only requests matching the specified routes require
+authentication:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[access]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_type</span> <span class="op">=</span> <span class="st">&quot;Basic&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Admin Area&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dt">routes</span> <span class="op">=</span> <span class="op">[</span> <span class="st">&quot;/admin/&quot;</span><span class="op">,</span> <span class="st">&quot;/settings/&quot;</span> <span class="op">]</span></span></code></pre></div>
+<p>With this configuration: - /admin/ and /settings/ require
+authentication - All other paths are publicly accessible</p>
+<h1 id="user-management">USER MANAGEMENT</h1>
+<p>Use this tool to manage users in the access control file.</p>
+<h2 id="creating-the-file">Creating the File</h2>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> init /etc/wsfn/access.toml</span></code></pre></div>
+<h2 id="adding-users">Adding Users</h2>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> add /etc/wsfn/access.toml alice</span></code></pre></div>
+<p>You will be prompted for a password. The password is encrypted and
+stored in the file.</p>
+<h2 id="updating-passwords">Updating Passwords</h2>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> update /etc/wsfn/access.toml alice</span></code></pre></div>
+<p>You will be prompted for a new password.</p>
+<h2 id="removing-users">Removing Users</h2>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> remove /etc/wsfn/access.toml alice</span></code></pre></div>
+<h2 id="listing-users">Listing Users</h2>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> list /etc/wsfn/access.toml</span></code></pre></div>
+<h1 id="security-best-practices">SECURITY BEST PRACTICES</h1>
+<h2 id="always-use-https">Always Use HTTPS</h2>
+<p>Basic authentication sends credentials in base64-encoded form.
+Without HTTPS, credentials can be intercepted.</p>
+<p><strong>Always configure HTTPS:</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[https]</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">cert_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/certs/cert.pem&quot;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="dt">key_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/certs/key.pem&quot;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;443&quot;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="kw">[access]</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_type</span> <span class="op">=</span> <span class="st">&quot;Basic&quot;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Secure Area&quot;</span></span></code></pre></div>
+<h2 id="strong-passwords">Strong Passwords</h2>
+<p>Use strong, unique passwords: - Minimum 12 characters - Mix of
+upper/lower case letters - Include numbers and special characters - Not
+dictionary words or common phrases</p>
+<h2 id="file-permissions">File Permissions</h2>
+<p>The access control file contains sensitive information (password
+hashes). Restrict permissions:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> 600 /etc/wsfn/access.toml</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">chown</span> root:root /etc/wsfn/access.toml</span></code></pre></div>
+<h2 id="backup">Backup</h2>
+<p>Regularly backup the access control file. If lost, all user access
+will be lost.</p>
+<h2 id="rate-limiting">Rate Limiting</h2>
+<p>Consider rate limiting to prevent brute force attacks.</p>
+<h1 id="examples">EXAMPLES</h1>
+<h2 id="complete-setup">Complete Setup</h2>
+<ol type="1">
+<li>Create access control file:</li>
+</ol>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> init /etc/wsfn/access.toml</span></code></pre></div>
+<ol start="2" type="1">
+<li>Add users:</li>
+</ol>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> add /etc/wsfn/access.toml alice</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> add /etc/wsfn/access.toml bob</span></code></pre></div>
+<ol start="3" type="1">
+<li>Configure webserver:</li>
+</ol>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="dt">access_file</span> <span class="op">=</span> <span class="st">&quot;/etc/wsfn/access.toml&quot;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[access]</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_type</span> <span class="op">=</span> <span class="st">&quot;Basic&quot;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="dt">auth_name</span> <span class="op">=</span> <span class="st">&quot;Restricted Area&quot;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="dt">routes</span> <span class="op">=</span> <span class="op">[</span> <span class="st">&quot;/admin/&quot;</span> <span class="op">]</span></span></code></pre></div>
+<ol start="4" type="1">
+<li>Start webserver with HTTPS:</li>
+</ol>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[https]</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">cert_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/certs/cert.pem&quot;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="dt">key_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/certs/key.pem&quot;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;443&quot;</span></span></code></pre></div>
+<h1 id="see-also">SEE ALSO</h1>
+<p>users, encryption, config, webaccess(1)</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>

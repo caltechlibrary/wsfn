@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>wsfn</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>tls - HTTPS/TLS configuration for secure connections</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>[https] cert_pem = CERTIFICATE_PATH key_pem = PRIVATE_KEY_PATH host =
+HOSTNAME port = PORT</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>Provides encrypted communication between clients and web server using
+X.509 certificates.</p>
+<h1 id="quick-start">QUICK START</h1>
+<h2 id="self-signed-certificate-development">Self-Signed Certificate
+(Development)</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">openssl</span> req <span class="at">-x509</span> <span class="at">-newkey</span> rsa:4096 <span class="at">-keyout</span> key.pem <span class="at">-out</span> cert.pem <span class="dt">\</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-days</span> 365 <span class="at">-nodes</span> <span class="at">-subj</span> <span class="st">&quot;/CN=localhost&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">webserver</span> start webserver.toml</span></code></pre></div>
+<p>Configuration:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[https]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">cert_pem</span> <span class="op">=</span> <span class="st">&quot;cert.pem&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">key_pem</span> <span class="op">=</span> <span class="st">&quot;key.pem&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;8443&quot;</span></span></code></pre></div>
+<p>Access: https://localhost:8443/</p>
+<p><strong>Note</strong>: Browsers will show security warnings for
+self-signed certificates.</p>
+<h2 id="lets-encrypt-production">Let’s Encrypt (Production)</h2>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get install certbot</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> certbot certonly <span class="at">--standalone</span> <span class="at">-d</span> example.com</span></code></pre></div>
+<p>Configuration:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[https]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">cert_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/letsencrypt/live/example.com/fullchain.pem&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">key_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/letsencrypt/live/example.com/privkey.pem&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;443&quot;</span></span></code></pre></div>
+<h2 id="renewal">Renewal</h2>
+<p>Let’s Encrypt certificates expire every 90 days. Set up automatic
+renewal:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> certbot renew <span class="at">--dry-run</span></span></code></pre></div>
+<h1 id="mixed-httphttps">MIXED HTTP/HTTPS</h1>
+<p>Run both simultaneously:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[http]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;80&quot;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[https]</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">cert_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/certs/cert.pem&quot;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">key_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/certs/key.pem&quot;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;443&quot;</span></span></code></pre></div>
+<h1 id="redirect-http-to-https">REDIRECT HTTP TO HTTPS</h1>
+<p>To automatically redirect HTTP requests to HTTPS:</p>
+<p>Option 1: Use redirects</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[http]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;80&quot;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[https]</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;443&quot;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="kw">[redirects]</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;http://example.com/&quot;</span><span class="er">,</span> <span class="dt">&quot;https://example.com/&quot;</span></span></code></pre></div>
+<p>Option 2: Use reverse proxy (nginx, Apache)</p>
+<h1 id="security-best-practices">SECURITY BEST PRACTICES</h1>
+<ul>
+<li>Use HTTPS for all production sites</li>
+<li>Keep certificates updated (Let’s Encrypt: 90 days)</li>
+<li>Restrict permissions: chmod 600 key.pem</li>
+<li>Use strong cipher suites (Go defaults are good)</li>
+</ul>
+<h1 id="testing">TESTING</h1>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">openssl</span> s_client <span class="at">-connect</span> localhost:443 <span class="at">-servername</span> localhost</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-I</span> https://localhost:443/</span></code></pre></div>
+<h1 id="troubleshooting">TROUBLESHOOTING</h1>
+<p>SSL Handshake Failed: - Certificate/key file doesn’t exist or isn’t
+readable - Certificate and key don’t match - Certificate is expired -
+Certificate not valid for hostname</p>
+<p>Port Already In Use: <sub></sub>~bash sudo lsof -i :443 sudo netstat
+-tlnp | grep 443 <sub></sub>~</p>
+<p>Browser Warnings: - Verify certificate is valid for the hostname -
+Check certificate chain is complete - Ensure certificate is not expired
+- Verify certificate is trusted by the browser</p>
+<h1 id="see-also">SEE ALSO</h1>
+<p>config-file, reverse-proxy, static-website</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>

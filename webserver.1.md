@@ -1,32 +1,29 @@
-% webserver(1) webserver user manual | version 0.0.14 89e9b3f
+% webserver(1) webserver user manual | version 0.1.0 5662b20
 % R. S. Doiel
 % 2026-01-05
 
 # NAME
 
-webserver
+webserver - A nimble web server
 
 # SYNOPSIS
 
 webserver [OPTIONS]
 
-webserver [VERB PARAMETERS || CONFIG_NAME] [DOCROOT] [URL_TO_LISTEN_ON]
+webserver [VERB [PARAMETERS] || CONFIG_FILE] [DOCROOT] [URL]
 
 # DESCRIPTION
 
-A nimble web server.
+A nimble web server for developing and testing static websites.
 
-webserver is a command line utility for developing and testing 
-static websites.  It uses Go's standard http libraries 
-and can supports both http 1 and 2 out of the box.  It 
-provides a minimal set of extra features useful for 
-developing and testing web services that leverage static 
-content. 
+webserver uses Go's standard HTTP libraries and supports both HTTP/1.1 and
+HTTP/2 out of the box. It provides a minimal set of features useful for
+developing and testing web services that leverage static content.
 
 # OPTIONS
 
--help
-: display help
+-help [TOPIC]
+: display help (this message) or help for TOPIC
 
 -license
 : display license
@@ -34,78 +31,67 @@ content.
 -version
 : display version
 
--o
-: write output to filename
+-o FILE
+: write output to FILE
 
+# VERBS
 
-# CONFIG_FILE
+init CONFIG_FILE
+: creates a configuration file
 
-webserver is configured through a configuration file. You can
-create an initialization file using the "init" action.
-By default the created initialation file is "webserver".
+start [CONFIG_FILE] [DOCROOT] [URL]
+: starts the web server
 
-# ACTION
+htdocs CONFIG_FILE DOCROOT
+: sets the document root in configuration
 
-The following actions are available
+url CONFIG_FILE URL
+: sets the URL to listen on
 
-init
-: creates a "webservice.toml" file. This is used by webserver for configuration.
+cert_pem CONFIG_FILE PATH
+: sets TLS certificate file path
 
-start
-: starts up the web service
+key_pem CONFIG_FILE PATH
+: sets TLS key file path
 
-htdocs
-: sets the document root
+auth CONFIG_FILE TYPE
+: sets authentication type (e.g., Basic)
 
-cert_pem
-: set the path to find cert.pem file for TLS
-
-key_pem
-: set the path to find the key.pem file for TLS
-
-auth
-: set auth type if used, e.g. Basic
-
-access
-: sets an external access file. The external access file is managed with the "webaccess" tool.
+access CONFIG_FILE FILE
+: sets external access control file
 
 # EXAMPLES
 
-Run web server using the content in the current directory
-(assumes there is no "webserver" file in the working directory).
+Run web server using the content in the current directory:
 
 ~~~
 webserver start
 ~~~
 
-Run web server using a specified directory
+Run web server using a specified directory:
 
 ~~~
    webserver start /www/htdocs
 ~~~
 
-Running web server using a "/etc/webserver" file for configuration.
+Run with specific configuration file:
 
 ~~~
    webserver start /etc/webserver
 ~~~
 
-Running the web server using the basic setup of "/etc/webserver"
-and overriding the default htdocs root and URL listened on
+# TOPICS
 
-~~~
-   webserver start /etc/webserver ./htdocs http://localhost:9011
-~~~
+Available help topics:
 
-Configure your web server with these steps
+config-file        Configuration file format and options
+reverse-proxy      Forward requests to backend services
+static-website     Serving static websites
+static-with-api    Example: Static site with dynamic API backend
+tls               HTTPS/TLS configuration
+auth              Authentication setup
+cors              Cross-Origin Resource Sharing
+redirects         URL redirection rules
 
-~~~
-   webserver init webserver.toml
-   webserver htdocs webserver.toml /var/www/htdocs
-   webserver url webserver.toml https://www.example.edu:443
-   webserver cert_pem webserver.toml /etc/certs/cert.pem
-   webserver key_pem webserver.toml /etc/certs/key.pem
-   webserver access webserver.toml /etc/wsfn/access.toml
-~~~
-
+Use 'webserver help TOPIC' or 'webserver -help TOPIC' for more information.
 

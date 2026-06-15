@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>wsfn</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>encryption - Password encryption options</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>encryption = METHOD</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>webaccess supports multiple encryption methods for storing user
+passwords. The encryption method determines how passwords are hashed and
+stored in the access control file.</p>
+<h1 id="encryption-methods">ENCRYPTION METHODS</h1>
+<h2 id="argon2id-recommended">argon2id (Recommended)</h2>
+<p>The default and most secure encryption method. Argon2id is the winner
+of the Password Hashing Competition (PHC). It provides Excellent
+protection against: - Brute force attacks - Timing attacks - GPU/ASIC
+attacks</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">encryption</span> <span class="op">=</span> <span class="st">&quot;argon2id&quot;</span></span></code></pre></div>
+<p><strong>Parameters used:</strong> - 1 iteration - 64MB memory - 4
+threads - 32 byte output</p>
+<h2 id="pbkdf2">pbkdf2</h2>
+<p>Password-Based Key Derivation Function 2 with HMAC-SHA1.
+NIST-approved and widely used.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">encryption</span> <span class="op">=</span> <span class="st">&quot;pbkdf2&quot;</span></span></code></pre></div>
+<p><strong>Parameters used:</strong> - 4097 iterations - SHA-1 hash
+function - 32 byte output</p>
+<h2 id="sha512-legacy">sha512 (Legacy)</h2>
+<p>SHA-512 hash. Not recommended for new deployments.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">encryption</span> <span class="op">=</span> <span class="st">&quot;sha512&quot;</span></span></code></pre></div>
+<p>SHA-512 is cryptographically secure but lacks built-in salting in
+some configurations.</p>
+<h2 id="md5-legacy---not-recommended">md5 (Legacy - NOT
+RECOMMENDED)</h2>
+<p>MD5 hash. <strong>Not secure</strong> - included only for backward
+compatibility.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">encryption</span> <span class="op">=</span> <span class="st">&quot;md5&quot;</span></span></code></pre></div>
+<p>MD5 is cryptographically broken and should not be used for new
+deployments.</p>
+<h1 id="setting-encryption-method">SETTING ENCRYPTION METHOD</h1>
+<p>The encryption method is set in the access control file:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create file with default (argon2id)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> init access.toml</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Or manually specify encryption</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> init access.toml</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Then edit access.toml to change encryption method</span></span></code></pre></div>
+<h1 id="comparing-methods">COMPARING METHODS</h1>
+<table>
+<thead>
+<tr>
+<th scope="col">Method</th>
+<th scope="col">Security</th>
+<th scope="col">Speed</th>
+<th scope="col">Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>argon2id</td>
+<td>Excellent</td>
+<td>Slow</td>
+<td>Recommended</td>
+</tr>
+<tr>
+<td>pbkdf2</td>
+<td>Good</td>
+<td>Medium</td>
+<td>Good alternative</td>
+</tr>
+<tr>
+<td>sha512</td>
+<td>Medium</td>
+<td>Fast</td>
+<td>Legacy only</td>
+</tr>
+<tr>
+<td>md5</td>
+<td>Poor</td>
+<td>Very Fast</td>
+<td>Avoid</td>
+</tr>
+</tbody>
+</table>
+<h2 id="argon2id">argon2id</h2>
+<ul>
+<li><strong>Security</strong>: Excellent</li>
+<li><strong>Memory</strong>: 64MB (resistant to GPU/ASIC attacks)</li>
+<li><strong>Iterations</strong>: 1</li>
+<li><strong>Threads</strong>: 4 (parallel computation)</li>
+<li><strong>Output</strong>: 32 bytes</li>
+<li><strong>Use</strong>: Recommended for new deployments</li>
+</ul>
+<h2 id="pbkdf2-1">pbkdf2</h2>
+<ul>
+<li><strong>Security</strong>: Good</li>
+<li><strong>Iterations</strong>: 4097</li>
+<li><strong>Hash</strong>: SHA-1</li>
+<li><strong>Output</strong>: 32 bytes</li>
+<li><strong>Use</strong>: Legacy systems, NIST compliance</li>
+</ul>
+<h2 id="sha512">sha512</h2>
+<ul>
+<li><strong>Security</strong>: Medium (no salt in some configs)</li>
+<li><strong>Output</strong>: 64 bytes</li>
+<li><strong>Use</strong>: Legacy compatibility only</li>
+</ul>
+<h2 id="md5">md5</h2>
+<ul>
+<li><strong>Security</strong>: Poor (cryptographically broken)</li>
+<li><strong>Output</strong>: 16 bytes</li>
+<li><strong>Use</strong>: Avoid - for backward compatibility only</li>
+</ul>
+<h1 id="migrating-encryption">MIGRATING ENCRYPTION</h1>
+<p>To change the encryption method for existing users:</p>
+<ol type="1">
+<li>Create a new access control file with the new encryption method</li>
+<li>Add all users to the new file</li>
+<li>Replace the old file with the new one</li>
+</ol>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create new file</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> init access-new.toml</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add users with new encryption</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> add access-new.toml alice</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">webaccess</span> add access-new.toml bob</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace old file</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> access-new.toml access.toml</span></code></pre></div>
+<h1 id="verifying-encryption">VERIFYING ENCRYPTION</h1>
+<p>Check the encryption method in the access control file:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> encryption access.toml</span></code></pre></div>
+<h1 id="see-also">SEE ALSO</h1>
+<p>access-control, users, config</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>wsfn</title>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+    <link rel="stylesheet" href="https://media.library.caltech.edu/cl-webcomponents/css/code-blocks.css">
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/copyToClipboard.js"></script>
+    <script type="module" src="https://media.library.caltech.edu/cl-webcomponents/footer-global.js"></script>
+</head>
+<body>
+<header>
+<a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
+</header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>config-file - Configuration file format and options</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>webserver [VERB] [CONFIG_FILE]</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>webserver is configured through TOML or JSON files that define the
+document root, networking settings, and feature configurations.</p>
+<h1 id="configuration-file-location">CONFIGURATION FILE LOCATION</h1>
+<p>Default files (in current directory): webserver.toml,
+webserver.json</p>
+<p>Specify file on command line:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">webserver</span> start /etc/webserver.toml</span></code></pre></div>
+<h1 id="toml-example">TOML EXAMPLE</h1>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode toml"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">htdocs</span> <span class="op">=</span> <span class="st">&quot;./public&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">access_file</span> <span class="op">=</span> <span class="st">&quot;/etc/wsfn/access.toml&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[http]</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">host</span> <span class="op">=</span> <span class="st">&quot;0.0.0.0&quot;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;80&quot;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[https]</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">cert_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/certs/cert.pem&quot;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">key_pem</span> <span class="op">=</span> <span class="st">&quot;/etc/certs/key.pem&quot;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">port</span> <span class="op">=</span> <span class="st">&quot;443&quot;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="kw">[reverse_proxy]</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;/api/&quot;</span> <span class="op">=</span> <span class="st">&quot;http://localhost:9000/&quot;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="kw">[cors]</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="dt">origin</span> <span class="op">=</span> <span class="st">&quot;https://example.com&quot;</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="dt">methods</span> <span class="op">=</span> <span class="op">[</span> <span class="st">&quot;GET&quot;</span><span class="op">,</span> <span class="st">&quot;POST&quot;</span><span class="op">,</span> <span class="st">&quot;OPTIONS&quot;</span> <span class="op">]</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="dt">headers</span> <span class="op">=</span> <span class="op">[</span> <span class="st">&quot;Authorization&quot;</span><span class="op">,</span> <span class="st">&quot;Content-Type&quot;</span> <span class="op">]</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="kw">[content_types]</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;.xml&quot;</span> <span class="op">=</span> <span class="st">&quot;application/xml&quot;</span></span></code></pre></div>
+<h1 id="main-settings">MAIN SETTINGS</h1>
+<p>htdocs = DOCUMENT_ROOT access_file = ACCESS_FILE_PATH redirects_csv =
+REDIRECTS_FILE_PATH</p>
+<h1 id="httphttps-service">HTTP/HTTPS SERVICE</h1>
+<p>[http] host = HOSTNAME # default: localhost port = PORT # default:
+8000</p>
+<p>[https] cert_pem = CERTIFICATE_PATH # required key_pem =
+PRIVATE_KEY_PATH # required port = PORT # default: 8443</p>
+<h1 id="features">FEATURES</h1>
+<p>[reverse_proxy] PREFIX = TARGET_URL</p>
+<p>[cors] origin = ORIGIN methods = [ METHOD, … ] headers = [ HEADER, …
+]</p>
+<p>[redirects] SOURCE = DESTINATION</p>
+<p>[content_types] EXTENSION = MIME_TYPE</p>
+<p>[access] auth_type = “Basic” auth_name = REALM routes = [ PATH, …
+]</p>
+</section>
+<footer-global></footer-global>
+</body>
+</html>

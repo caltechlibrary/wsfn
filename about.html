@@ -11,51 +11,79 @@
 <header>
 <a href="https://library.caltech.edu"><img src="https://media.library.caltech.edu/assets/caltechlibrary-logo.png" alt="Caltech Library logo"></a>
 </header>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
 <nav>
 <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="index.html">README</a></li>
+    <li><a href="/">All Library Apps</a></li>
+    <li><a href="index.html">Home</a></li>
     <li><a href="LICENSE">LICENSE</a></li>
     <li><a href="INSTALL.html">INSTALL</a></li>
     <li><a href="user_manual.html">User Manual</a></li>
     <li><a href="about.html">About</a></li>
-    <li><a href="search.html">Search</a></li>
-    <li><a href="https://github.com/caltechlibrary/wsfn">GitHub</a></li>
+    <!-- <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a></li>
 </ul>
 </nav>
-<section>
+<section id="main-content">
 <h1 id="about-this-software">About this software</h1>
-<h2 id="wsfn-0.0.14">wsfn 0.0.14</h2>
-<p>This is a maintenance release compiled with Go version 1.25.5 and
-updated dependencies.</p>
-<h3 id="authors">Authors</h3>
+<h2 id="wsfn-0.1.0">wsfn 0.1.0</h2>
 <ul>
-<li>R. S. Doiel, <a href="https://orcid.org/0000-0003-0900-6903"
-class="uri">https://orcid.org/0000-0003-0900-6903</a></li>
+<li>Added reverse proxy support.</li>
+<li>Upgraded Go to v1.26.4</li>
 </ul>
-<h3 id="maintainers">Maintainers</h3>
+<h2 id="authors">Authors</h2>
+<ul>
+<li><a href="https://orcid.org/0000-0003-0900-6903">R. S. Doiel</a></li>
+</ul>
+<h2 id="maintainers">Maintainers</h2>
 <ul>
 <li>https://orcid.org/0000-0003-0900-6903</li>
 </ul>
-<p>A golang package providing simple static http services.</p>
+<p><em>wsfn</em> is a package for common web functions Caltech Library
+uses in various Golang based Caltech Library tools and services. The
+goal is to standardize our handling of web interactions.</p>
 <ul>
-<li>License: <a href="https://caltechlibrary.github.io/wsfn/LICENSE"
-class="uri">https://caltechlibrary.github.io/wsfn/LICENSE</a></li>
-<li>GitHub: <a href="https://github.com/caltechlibrary/wsfn"
-class="uri">https://github.com/caltechlibrary/wsfn</a></li>
-<li>Issues: <a href="https://github.com/caltechlibrary/wsfn/issues"
-class="uri">https://github.com/caltechlibrary/wsfn/issues</a></li>
+<li>wsfn.CORSPolicy is a structure for adding CORS headers to a http
+Handler</li>
+<li>StaticRouter is a http Handler Function for working with static
+routes</li>
+<li>RedirectRouter handles simple target prefix, destination prefix
+redirect handling
+<ul>
+<li>AddRedirectRoute adds a target prefix and destination prefix</li>
+<li>HasRedirectRoutes return true if any redirect routes are
+configured</li>
+<li>RedirectRouter uses the internal redirect data to handle
+redirects</li>
+</ul></li>
+<li>ReverseProxy router lets front other web services.</li>
 </ul>
-<h3 id="programming-languages">Programming languages</h3>
+<p>An example <strong>webserver</strong> is also provided to demonstrate
+some of the functionality available with this package. The
+<strong>webserver</strong> is intended for instructional purposes only
+and shouldn’t be used in a production setting.</p>
+<ul>
+<li><a
+href="https://caltechlibrary.github.io/wsfn/LICENSE">License</a></li>
+<li><a href="https://github.com/caltechlibrary/wsfn">Code Repository</a>
+<ul>
+<li><a href="https://github.com/caltechlibrary/wsfn/issues">Issue
+Tracker</a></li>
+</ul></li>
+</ul>
+<h2 id="programming-languages">Programming languages</h2>
 <ul>
 <li>Go</li>
 </ul>
-<h3 id="software-requirements">Software Requirements</h3>
+<h2 id="software-requirements">Software Requirements</h2>
 <ul>
-<li>Go &gt;= 1.24.2</li>
-<li>GNU Make &gt; 3</li>
-<li>Pandoc &gt;= 3.1</li>
-<li>CMTools &gt;= 0.0.23</li>
+<li>Go &gt;= 1.26.4</li>
+</ul>
+<h2 id="software-suggestions">Software Suggestions</h2>
+<ul>
+<li>GNU Make &gt; 3.8</li>
+<li>Pandoc &gt;= 3.9</li>
+<li>CMTools &gt;= 0.0.45b</li>
 </ul>
 </section>
 <footer-global></footer-global>
