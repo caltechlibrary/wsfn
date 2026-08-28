@@ -44,7 +44,7 @@ ifeq ($(OS), Windows)
 	EXT = .exe
 endif
 
-build: version.go $(PROGRAMS) man CITATION.cff about.md installer.sh installer.ps1
+build: version.go $(PROGRAMS) man CITATION.cff installer.sh installer.ps1
 
 version.go: .FORCE
 	cmt codemeta.json version.go
@@ -77,9 +77,6 @@ $(MAN_PAGES): .FORCE
 
 CITATION.cff: codemeta.json
 	cmt codemeta.json CITATION.cff
-
-about.md: codemeta.json $(PROGRAMS)
-	cmt codemeta.json about.md
 
 installer.sh: .FORCE
 	cmt codemeta.json installer.sh
